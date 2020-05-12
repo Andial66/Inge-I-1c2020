@@ -397,14 +397,11 @@ Numero subclass: #Entero
 	
 	^self class with: value // aDivisor integerValue! !
 
-!Entero methodsFor: 'arithmetic operations' stamp: 'SC 5/10/2020 19:27:05'!
+!Entero methodsFor: 'arithmetic operations' stamp: 'SC 5/11/2020 20:34:07'!
 addFraction: aFractionToAdd
 
-	| newNumerator newDenominator |
-	
-	newDenominator  := aFractionToAdd denominator.
-	newNumerator  := aFractionToAdd numerator + (self * aFractionToAdd denominator).
-	^newNumerator / newDenominator
+	^aFractionToAdd addInteger: self.
+
 	! !
 
 !Entero methodsFor: 'arithmetic operations' stamp: 'SC 5/10/2020 19:46:03'!
@@ -430,18 +427,13 @@ dividingInteger: anIntegerToDiv
 	^Fraccion with: anIntegerToDiv over: self.
 ! !
 
-!Entero methodsFor: 'arithmetic operations' stamp: 'HAW 9/24/2018 08:47:50'!
+!Entero methodsFor: 'arithmetic operations' stamp: 'SC 5/11/2020 20:49:21'!
 fibonacci
 
-	| one two |
-	
-	one := Entero with: 1.
-	two := Entero with: 2.
-	
-	self isNegative ifTrue: [self error: Entero negativeFibonacciErrorDescription ].	
-	(self isZero or: [self isOne]) ifTrue: [^one].
-	
-	^ (self - one) fibonacci + (self - two) fibonacci
+	self subclassResponsibility 
+
+
+
 		! !
 
 !Entero methodsFor: 'arithmetic operations' stamp: 'HernanWilkinson 5/7/2016 21:00'!
@@ -449,10 +441,10 @@ greatestCommonDivisorWith: anEntero
 	
 	^self class with: (value gcd: anEntero integerValue)! !
 
-!Entero methodsFor: 'arithmetic operations' stamp: 'SC 5/10/2020 19:32:10'!
+!Entero methodsFor: 'arithmetic operations' stamp: 'SC 5/11/2020 20:35:01'!
 multiplyByFraction: aFractionToMult
 
-	^(aFractionToMult numerator * self) / aFractionToMult denominator
+	^aFractionToMult multiplyByInteger: self.
 ! !
 
 !Entero methodsFor: 'arithmetic operations' stamp: 'SC 5/10/2020 19:46:16'!
@@ -490,10 +482,20 @@ hash
 	^value hash! !
 
 
-!Entero methodsFor: 'initialization' stamp: 'HernanWilkinson 5/7/2016 20:09'!
+!Entero methodsFor: 'initialization' stamp: 'SC 5/11/2020 21:16:57'!
 initalizeWith: aValue 
 	
-	value := aValue! !
+	(aValue = 0) 
+				ifTrue: [ ^Zero new initialize].
+	(aValue = 1)
+			     ifTrue: [^One new initialize].
+	(aValue < 0)
+				ifTrue: [^LessThanZero new initializeWith: aValue].
+			
+	^BiggerThanOne new initializeWith: aValue.
+	
+	
+	! !
 
 
 !Entero methodsFor: 'value' stamp: 'HernanWilkinson 5/7/2016 21:02'!
@@ -510,20 +512,20 @@ printOn: aStream
 	aStream print: value ! !
 
 
-!Entero methodsFor: 'testing' stamp: 'NR 9/23/2018 22:17:55'!
+!Entero methodsFor: 'testing' stamp: 'SC 5/11/2020 21:29:50'!
 isNegative
 	
-	^value < 0! !
+	^self subclassResponsibility ! !
 
-!Entero methodsFor: 'testing' stamp: 'HernanWilkinson 5/7/2016 20:14'!
+!Entero methodsFor: 'testing' stamp: 'SC 5/11/2020 21:29:41'!
 isOne
 	
-	^value = 1! !
+	^self subclassResponsibility ! !
 
-!Entero methodsFor: 'testing' stamp: 'HernanWilkinson 5/7/2016 20:12'!
+!Entero methodsFor: 'testing' stamp: 'SC 5/11/2020 21:18:25'!
 isZero
 	
-	^value = 0! !
+	self subclassResponsibility ! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -542,6 +544,152 @@ with: aValue
 	aValue isInteger ifFalse: [  self error: 'aValue debe ser anInteger' ].
 	
 	^self new initalizeWith: aValue! !
+
+
+!classDefinition: #BiggerThanOne category: #'Numero-Exercise'!
+Entero subclass: #BiggerThanOne
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Numero-Exercise'!
+
+!BiggerThanOne methodsFor: 'arithmetic operations' stamp: 'SC 5/11/2020 20:49:33'!
+fibonacci
+
+	| one two |
+	
+	one := Entero with: 1.
+	two := Entero with: 2.
+
+	^ (self - one) fibonacci + (self - two) fibonacci! !
+
+
+!BiggerThanOne methodsFor: 'initialize' stamp: 'SC 5/11/2020 21:06:15'!
+initializeWith: aValue
+
+	value := aValue.! !
+
+
+!BiggerThanOne methodsFor: 'testing' stamp: 'SC 5/11/2020 21:19:39'!
+isNegative
+
+	^false! !
+
+!BiggerThanOne methodsFor: 'testing' stamp: 'SC 5/11/2020 21:18:52'!
+isOne
+
+	^false! !
+
+!BiggerThanOne methodsFor: 'testing' stamp: 'SC 5/11/2020 21:18:42'!
+isZero
+
+	^false! !
+
+
+!classDefinition: #LessThanZero category: #'Numero-Exercise'!
+Entero subclass: #LessThanZero
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Numero-Exercise'!
+
+!LessThanZero methodsFor: 'arithmetic operations' stamp: 'SC 5/11/2020 21:15:22'!
+fibonacci
+
+	self error: Entero negativeFibonacciErrorDescription.! !
+
+
+!LessThanZero methodsFor: 'initialize' stamp: 'SC 5/11/2020 21:16:01'!
+initializeWith: aValue
+
+	value := aValue! !
+
+
+!LessThanZero methodsFor: 'testing' stamp: 'SC 5/11/2020 21:21:29'!
+isNegative
+
+	^true! !
+
+!LessThanZero methodsFor: 'testing' stamp: 'SC 5/11/2020 21:21:22'!
+isOne
+
+	^false! !
+
+!LessThanZero methodsFor: 'testing' stamp: 'SC 5/11/2020 21:21:19'!
+isZero
+
+	^false! !
+
+
+!classDefinition: #One category: #'Numero-Exercise'!
+Entero subclass: #One
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Numero-Exercise'!
+
+!One methodsFor: 'arithmetic operations' stamp: 'SC 5/11/2020 20:44:10'!
+fibonacci
+
+	^self.! !
+
+
+!One methodsFor: 'initialize' stamp: 'SC 5/11/2020 21:06:42'!
+initialize
+
+	value := 1! !
+
+
+!One methodsFor: 'testing' stamp: 'SC 5/11/2020 21:21:04'!
+isNegative
+
+	^false! !
+
+!One methodsFor: 'testing' stamp: 'SC 5/11/2020 21:20:07'!
+isOne
+
+	^true! !
+
+!One methodsFor: 'testing' stamp: 'SC 5/11/2020 21:21:11'!
+isZero
+
+	^false! !
+
+
+!classDefinition: #Zero category: #'Numero-Exercise'!
+Entero subclass: #Zero
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Numero-Exercise'!
+
+!Zero methodsFor: 'arithmetic operations' stamp: 'SC 5/11/2020 21:12:32'!
+fibonacci
+
+	^One new. 
+	! !
+
+
+!Zero methodsFor: 'initialize' stamp: 'SC 5/11/2020 21:07:00'!
+initialize
+
+	value := 0! !
+
+
+!Zero methodsFor: 'testing' stamp: 'SC 5/11/2020 21:22:04'!
+isNegative
+
+	^false! !
+
+!Zero methodsFor: 'testing' stamp: 'SC 5/11/2020 21:21:57'!
+isOne
+
+	^false! !
+
+!Zero methodsFor: 'testing' stamp: 'SC 5/11/2020 21:22:09'!
+isZero
+
+	^true! !
 
 
 !classDefinition: #Fraccion category: #'Numero-Exercise'!
