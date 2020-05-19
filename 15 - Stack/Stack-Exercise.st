@@ -139,7 +139,7 @@ test10CanNotTopWhenThereAreNoObjectsInTheStack
 
 !classDefinition: #SentenceFinderByPrefixTest category: #'Stack-Exercise'!
 TestCase subclass: #SentenceFinderByPrefixTest
-	instanceVariableNames: 'sentenceFinderByPref sentenceOne sentenceTwo sentenceThree expectedSentences prefixForOne prefixForTwo prefixForThree prefixForOneCaseSens'
+	instanceVariableNames: 'sentenceFinderByPref sentenceOne sentenceTwo sentenceThree expectedSentences prefixForOne prefixForTwo prefixForThree prefixForOneCaseSens sentenceNotAlphaNumeric prefixForNotAlpha'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'Stack-Exercise'!
@@ -230,7 +230,7 @@ test07FindEsCaseSensitive
 
 	! !
 
-!SentenceFinderByPrefixTest methodsFor: 'tests' stamp: 'SC 5/18/2020 19:20:20'!
+!SentenceFinderByPrefixTest methodsFor: 'tests' stamp: 'SC 5/18/2020 21:01:35'!
 test08ElPrefijoNoPuedeSerVacio
 
 	self 
@@ -258,8 +258,53 @@ test09ElPrefijoNoPuedeContenerEspacios
 
 	! !
 
+!SentenceFinderByPrefixTest methodsFor: 'tests' stamp: 'SC 5/18/2020 21:02:23'!
+test10ElPrefijoNoPuedeSerVacioAunqueHayaOraciones
 
-!SentenceFinderByPrefixTest methodsFor: 'setUp' stamp: 'SC 5/18/2020 18:36:05'!
+	sentenceFinderByPref addSentence: sentenceThree.
+
+	self 
+		should: [sentenceFinderByPref find: '']
+		raise: Error
+		withExceptionDo: [ :anError | self assert: anError messageText equals: SentenceFinderByPrefix notValidPrefixMessage].
+		
+
+	
+	
+
+	! !
+
+!SentenceFinderByPrefixTest methodsFor: 'tests' stamp: 'SC 5/18/2020 21:03:08'!
+test11ElPrefijoNoPuedeContenerEspaciosAunqueHayaOraciones
+
+	sentenceFinderByPref addSentence: sentenceThree.
+
+	self 
+		should: [sentenceFinderByPref find: 'Tengo dos espacios']
+		raise: Error
+		withExceptionDo: [ :anError | self assert: anError messageText equals: SentenceFinderByPrefix notValidPrefixMessage].
+		
+
+	
+	
+
+	! !
+
+!SentenceFinderByPrefixTest methodsFor: 'tests' stamp: 'SC 5/18/2020 21:07:31'!
+test12FindFuncionaSinAlfanumericos
+
+	sentenceFinderByPref addSentence: sentenceNotAlphaNumeric.
+	sentenceFinderByPref addSentence: sentenceOne.
+	
+	expectedSentences add: sentenceNotAlphaNumeric .
+	
+	self assert: (sentenceFinderByPref find: prefixForNotAlpha ) = expectedSentences.
+	
+
+	! !
+
+
+!SentenceFinderByPrefixTest methodsFor: 'setUp' stamp: 'SC 5/18/2020 21:06:07'!
 setUp
 
 	sentenceFinderByPref := SentenceFinderByPrefix new.
@@ -267,10 +312,13 @@ setUp
 	sentenceOne := 'Tres tristes tigres...'.
 	sentenceTwo := 'Pablito clavo un clavito...'.
 	sentenceThree := 'cu4nd0 cu3ntes cu3ntos...'.
+	sentenceNotAlphaNumeric := '{}:;,.;'.
 	prefixForOne := 'Tres'.
 	prefixForTwo := 'Pabli'.
 	prefixForThree := 'cu4n'.
 	prefixForOneCaseSens := 'TRES'.
+	prefixForNotAlpha := '{}:;'.
+	
 	
 	
 
@@ -323,6 +371,11 @@ top
 
 	^self error: OOStack stackEmptyErrorDescription ! !
 
+!NullNode methodsFor: 'as yet unclassified' stamp: 'SC 5/18/2020 21:09:23'!
+value
+
+	^self error: OOStack stackEmptyErrorDescription ! !
+
 
 !classDefinition: #RealNode category: #'Stack-Exercise'!
 Node subclass: #RealNode
@@ -364,8 +417,8 @@ size
 
 	^number.! !
 
-!RealNode methodsFor: 'as yet unclassified' stamp: 'SC 5/18/2020 17:25:30'!
-top
+!RealNode methodsFor: 'as yet unclassified' stamp: 'SC 5/18/2020 21:09:06'!
+value
 
 	^elem! !
 
@@ -389,12 +442,12 @@ isEmpty
 	^elements isEmpty! !
 
 
-!OOStack methodsFor: 'operations' stamp: 'SC 5/18/2020 17:36:57'!
+!OOStack methodsFor: 'operations' stamp: 'SC 5/18/2020 21:08:44'!
 pop
 
 	| currentTop |
 	
-	currentTop := elements top.
+	currentTop := elements value.
 	
 	elements _ elements prev.
 	
@@ -410,10 +463,10 @@ size
 
 	^elements size! !
 
-!OOStack methodsFor: 'operations' stamp: 'SC 5/18/2020 17:31:31'!
+!OOStack methodsFor: 'operations' stamp: 'SC 5/18/2020 21:08:52'!
 top
 
-	^elements top.! !
+	^elements value.! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
