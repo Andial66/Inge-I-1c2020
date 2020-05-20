@@ -366,11 +366,6 @@ size
 
 	^0! !
 
-!NullNode methodsFor: 'as yet unclassified' stamp: 'SC 5/18/2020 17:28:27'!
-top
-
-	^self error: OOStack stackEmptyErrorDescription ! !
-
 !NullNode methodsFor: 'as yet unclassified' stamp: 'SC 5/18/2020 21:09:23'!
 value
 
