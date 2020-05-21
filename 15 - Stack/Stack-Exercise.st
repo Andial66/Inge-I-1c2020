@@ -230,8 +230,8 @@ test07FindEsCaseSensitive
 
 	! !
 
-!SentenceFinderByPrefixTest methodsFor: 'tests' stamp: 'SC 5/18/2020 21:01:35'!
-test08ElPrefijoNoPuedeSerVacio
+!SentenceFinderByPrefixTest methodsFor: 'tests' stamp: 'SC 5/21/2020 16:02:42'!
+test08ElPrefijoNoPuedeSerVacioConStackVacio
 
 	self 
 		should: [sentenceFinderByPref find: '']
@@ -244,8 +244,8 @@ test08ElPrefijoNoPuedeSerVacio
 
 	! !
 
-!SentenceFinderByPrefixTest methodsFor: 'tests' stamp: 'SC 5/18/2020 19:20:45'!
-test09ElPrefijoNoPuedeContenerEspacios
+!SentenceFinderByPrefixTest methodsFor: 'tests' stamp: 'SC 5/21/2020 16:02:26'!
+test09ElPrefijoNoPuedeContenerEspaciosConStackVacio
 
 	self 
 		should: [sentenceFinderByPref find: 'Tengo dos espacios']
@@ -332,6 +332,33 @@ Object subclass: #Node
 	poolDictionaries: ''
 	category: 'Stack-Exercise'!
 
+!Node methodsFor: 'operations' stamp: 'SC 5/21/2020 16:05:23'!
+next: anElem
+
+	self subclassResponsibility ! !
+
+!Node methodsFor: 'operations' stamp: 'SC 5/21/2020 16:05:08'!
+prev
+
+	self subclassResponsibility ! !
+
+
+!Node methodsFor: 'accessing' stamp: 'SC 5/21/2020 16:04:57'!
+size
+
+	self subclassResponsibility ! !
+
+!Node methodsFor: 'accessing' stamp: 'SC 5/21/2020 16:05:12'!
+value
+
+	self subclassResponsibility ! !
+
+
+!Node methodsFor: 'testing' stamp: 'SC 5/21/2020 16:03:53'!
+isEmpty
+	
+	self subclassResponsibility ! !
+
 
 !classDefinition: #NullNode category: #'Stack-Exercise'!
 Node subclass: #NullNode
@@ -340,12 +367,7 @@ Node subclass: #NullNode
 	poolDictionaries: ''
 	category: 'Stack-Exercise'!
 
-!NullNode methodsFor: 'as yet unclassified' stamp: 'SC 5/18/2020 17:27:33'!
-isEmpty
-
-	^true! !
-
-!NullNode methodsFor: 'as yet unclassified' stamp: 'SC 5/18/2020 17:36:32'!
+!NullNode methodsFor: 'operations' stamp: 'SC 5/18/2020 17:36:32'!
 next: anElem
 
 	| newNode |
@@ -356,20 +378,27 @@ next: anElem
 	
 	^newNode ! !
 
-!NullNode methodsFor: 'as yet unclassified' stamp: 'SC 5/18/2020 17:36:37'!
+!NullNode methodsFor: 'operations' stamp: 'SC 5/18/2020 17:36:37'!
 prev
 
 	^self error: OOStack stackEmptyErrorDescription ! !
 
-!NullNode methodsFor: 'as yet unclassified' stamp: 'SC 5/18/2020 17:27:41'!
+
+!NullNode methodsFor: 'accessing' stamp: 'SC 5/18/2020 17:27:41'!
 size
 
 	^0! !
 
-!NullNode methodsFor: 'as yet unclassified' stamp: 'SC 5/18/2020 21:09:23'!
+!NullNode methodsFor: 'accessing' stamp: 'SC 5/18/2020 21:09:23'!
 value
 
 	^self error: OOStack stackEmptyErrorDescription ! !
+
+
+!NullNode methodsFor: 'testing' stamp: 'SC 5/18/2020 17:27:33'!
+isEmpty
+
+	^true! !
 
 
 !classDefinition: #RealNode category: #'Stack-Exercise'!
@@ -379,19 +408,13 @@ Node subclass: #RealNode
 	poolDictionaries: ''
 	category: 'Stack-Exercise'!
 
-!RealNode methodsFor: 'as yet unclassified' stamp: 'SC 5/18/2020 17:24:59'!
-initializeWith: anElem nextOf: aNode withNumber: aNumber
-
-	elem := anElem.
-	prev := aNode.
-	number := aNumber.! !
-
-!RealNode methodsFor: 'as yet unclassified' stamp: 'SC 5/18/2020 17:22:50'!
+!RealNode methodsFor: 'testing' stamp: 'SC 5/18/2020 17:22:50'!
 isEmpty
 
 	^false.! !
 
-!RealNode methodsFor: 'as yet unclassified' stamp: 'SC 5/18/2020 17:36:26'!
+
+!RealNode methodsFor: 'operations' stamp: 'SC 5/18/2020 17:36:26'!
 next: anElem
 
 	| newNode |
@@ -402,20 +425,29 @@ next: anElem
 	
 	^newNode ! !
 
-!RealNode methodsFor: 'as yet unclassified' stamp: 'SC 5/18/2020 17:36:48'!
+!RealNode methodsFor: 'operations' stamp: 'SC 5/18/2020 17:36:48'!
 prev
 
 	^prev! !
 
-!RealNode methodsFor: 'as yet unclassified' stamp: 'SC 5/18/2020 17:25:19'!
+
+!RealNode methodsFor: 'accessing' stamp: 'SC 5/18/2020 17:25:19'!
 size
 
 	^number.! !
 
-!RealNode methodsFor: 'as yet unclassified' stamp: 'SC 5/18/2020 21:09:06'!
+!RealNode methodsFor: 'accessing' stamp: 'SC 5/18/2020 21:09:06'!
 value
 
 	^elem! !
+
+
+!RealNode methodsFor: 'initialize' stamp: 'SC 5/18/2020 17:24:59'!
+initializeWith: anElem nextOf: aNode withNumber: aNumber
+
+	elem := anElem.
+	prev := aNode.
+	number := aNumber.! !
 
 
 !classDefinition: #OOStack category: #'Stack-Exercise'!
@@ -487,11 +519,12 @@ addSentence: aSentence
 
 	sentencesStack push: aSentence.! !
 
-!SentenceFinderByPrefix methodsFor: 'operations' stamp: 'SC 5/18/2020 19:15:58'!
+!SentenceFinderByPrefix methodsFor: 'operations' stamp: 'SC 5/21/2020 15:59:37'!
 find: aPrefix
 
 	| stackForCopy listOfSentences |
 	
+	"El prefijo debe ser valido."
 	(aPrefix = '' | ((aPrefix findString: ' ') = 0) not)
 		ifTrue: [^self error: self class notValidPrefixMessage].
 	
