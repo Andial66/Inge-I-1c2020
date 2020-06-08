@@ -405,12 +405,12 @@ turnRight
 	! !
 
 
-!MarsRover methodsFor: 'receive' stamp: 'SC 6/6/2020 16:58:10'!
+!MarsRover methodsFor: 'receive' stamp: 'SC 6/7/2020 23:36:00'!
 receive: anArrayOfCommands 
 
-	anArrayOfCommands do: [ :operation |
+	anArrayOfCommands do: [ :command |
 		
-		(commandRules at: operation 
+		(commandRules at: command
 						  ifAbsent: [^self]) value
 						
 	].
