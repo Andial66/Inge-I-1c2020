@@ -170,17 +170,10 @@ test12NoSePuedePonerUnaFichaSiTerminoElJuego
 	
 	! !
 
-!TerniLapilliTest methodsFor: 'test' stamp: 'SC 6/13/2020 20:25:30'!
+!TerniLapilliTest methodsFor: 'test' stamp: 'FE 6/14/2020 13:47:06'!
 test13SePuedeMoverUnaFichaTrasColocarLasPrimeras6
 
 	game := TerniLapilli new.
-	
-	game putXAt: 2@2.
-	game putOAt: 2@3.
-	game putXAt: 1@1. 
-	game putOAt: 3@1.
-	game putXAt: 2@1.
-	game putOAt: 1@2.
 	
 	"game move: 1@1 to: 2@2."
 	
@@ -194,12 +187,20 @@ Object subclass: #TerniLapilli
 	poolDictionaries: ''
 	category: 'TerniLapilli - Ejercicio'!
 
-!TerniLapilli methodsFor: 'as yet unclassified' stamp: 'SC 6/13/2020 19:48:41'!
+!TerniLapilli methodsFor: 'as yet unclassified' stamp: 'FE 6/14/2020 14:33:58'!
+board
+
+	^board 
+		
+	! !
+
+!TerniLapilli methodsFor: 'as yet unclassified' stamp: 'FE 6/14/2020 14:31:38'!
 initialize
 
 	super initialize.
 	playerTurn  := 'X'.
-	board := TerniLapilliBoard new.! !
+	board := TerniLapilliBoard new.
+	! !
 
 !TerniLapilli methodsFor: 'as yet unclassified' stamp: 'SC 6/13/2020 19:46:44'!
 isOver
@@ -221,7 +222,7 @@ isTied
 
 	^self isOver not! !
 
-!TerniLapilli methodsFor: 'as yet unclassified' stamp: 'SC 6/13/2020 20:34:25'!
+!TerniLapilli methodsFor: 'as yet unclassified' stamp: 'FE 6/14/2020 14:57:34'!
 put: aToken at: aPosition
 
 	(self isOver)
@@ -233,41 +234,19 @@ put: aToken at: aPosition
 	
 		ifTrue: [(playerTurn = 'X')
 			ifTrue: [board add: aToken at: aPosition.
-				      playerTurn  := 'O'.]
+				      playerTurn  := 'O'.
+					board displayBoard addMorph: aToken display position: (aPosition -1) * 100 + 25.				
+				    ]
 			ifFalse: [self error: self class incorrectTurnError.].]
 		
 		ifFalse: [(playerTurn = 'O')
 			ifTrue: [board add: aToken at: aPosition.
-				      playerTurn := 'X']
+				      playerTurn := 'X'.
+					board displayBoard addMorph: aToken display position: (aPosition -1) * 100 + 25.
+					]
 			ifFalse: [self error: self class incorrectTurnError]].
 		
 	! !
-
-!TerniLapilli methodsFor: 'as yet unclassified' stamp: 'SC 6/13/2020 19:47:37'!
-putOAt: aPosition
-
-	(self isOver)
-		ifTrue: [self error: self class gameOverError.].
-
-	board validatePosition: aPosition.
-
-	playerTurn = 'O'
-		ifTrue: [board addOToken: aPosition.
-				playerTurn := 'X']
-		ifFalse: [self error: self class incorrectTurnError]! !
-
-!TerniLapilli methodsFor: 'as yet unclassified' stamp: 'SC 6/13/2020 20:31:06'!
-putXAt: aPosition
-
-	(self isOver)
-		ifTrue: [self error: self class gameOverError.].
-
-	board validatePosition: aPosition.
-
-	playerTurn = 'X'
-		ifTrue: [board addXToken: aPosition.
-				^playerTurn  := 'O'.]
-		ifFalse: [self error: self class incorrectTurnError.].! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -288,7 +267,7 @@ incorrectTurnError
 
 !classDefinition: #TerniLapilliBoard category: #'TerniLapilli - Ejercicio'!
 Object subclass: #TerniLapilliBoard
-	instanceVariableNames: 'xTokens oTokens'
+	instanceVariableNames: 'xTokens oTokens displayBoard'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TerniLapilli - Ejercicio'!
@@ -315,6 +294,11 @@ allEqual: aListOfNumbers
 
 	^(aListOfNumbers size = 3) and: [(aListOfNumbers max = aListOfNumbers min) ]
 	! !
+
+!TerniLapilliBoard methodsFor: 'as yet unclassified' stamp: 'FE 6/14/2020 14:32:59'!
+displayBoard
+
+	^displayBoard.! !
 
 !TerniLapilliBoard methodsFor: 'as yet unclassified' stamp: 'SC 6/13/2020 20:40:44'!
 existsThreeInLine
@@ -355,12 +339,13 @@ hasTokenIn: aPosition
 
 	^(xTokens includes: aPosition) or: [oTokens includes: aPosition].! !
 
-!TerniLapilliBoard methodsFor: 'as yet unclassified' stamp: 'SC 6/13/2020 20:40:44'!
+!TerniLapilliBoard methodsFor: 'as yet unclassified' stamp: 'FE 6/14/2020 14:32:31'!
 initialize
 
 	super initialize.
 	xTokens := Dictionary new.
-	oTokens := Dictionary new.! !
+	oTokens := Dictionary new.
+	displayBoard := TerniLapilliDisplay new initializeWith: 300@300.! !
 
 !TerniLapilliBoard methodsFor: 'as yet unclassified' stamp: 'SC 6/13/2020 20:40:44'!
 numberOfTokens
@@ -401,22 +386,117 @@ tokensLimitError
 	^'6 tokens already in board'! !
 
 
-!classDefinition: #Token category: #'TerniLapilli - Ejercicio'!
-Object subclass: #Token
-	instanceVariableNames: 'position'
+!classDefinition: #TerniLapilliDisplay category: #'TerniLapilli - Ejercicio'!
+Object subclass: #TerniLapilliDisplay
+	instanceVariableNames: 'displayBoard'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TerniLapilli - Ejercicio'!
 
-!Token methodsFor: 'as yet unclassified' stamp: 'SC 6/13/2020 20:15:55'!
+!TerniLapilliDisplay methodsFor: 'as yet unclassified' stamp: 'FE 6/14/2020 19:40:46'!
+initializeWith: aSize
+
+	| lineX1 lineX2 lineX3 lineY1 lineY2 lineY3 testMode |
+	
+	testMode := 'On'.
+
+	displayBoard := RectangleLikeMorph new.
+	displayBoard morphHeight: aSize y.
+	displayBoard morphWidth: aSize x.
+	displayBoard color: Color white.
+	
+	lineX1 := RectangleLikeMorph new.
+	lineX1 morphHeight: 2.
+	lineX1 morphWidth: aSize x - 98.
+	lineX1 color: Color black.
+	
+	lineX2 := RectangleLikeMorph new.
+	lineX2 morphHeight: 2.
+	lineX2 morphWidth: aSize x - 98.
+	lineX2 color: Color black.
+	
+	lineX3 := RectangleLikeMorph new.
+	lineX3 morphHeight: 2.
+	lineX3 morphWidth: aSize x - 98.
+	lineX3 color: Color black.
+	
+	lineY1 := RectangleLikeMorph new.
+	lineY1 morphHeight: aSize y - 98.
+	lineY1 morphWidth: 2.
+	lineY1 color: Color black.
+	
+	lineY2 := RectangleLikeMorph new.
+	lineY2 morphHeight: aSize y - 98.
+	lineY2 morphWidth: 2.
+	lineY2 color: Color black.
+	
+	lineY3 := RectangleLikeMorph new.
+	lineY3 morphHeight: aSize y - 98.
+	lineY3 morphWidth: 2.
+	lineY3 color: Color black.
+	
+	displayBoard addMorph: lineX1 position: 45@45.
+	displayBoard addMorph: lineX2 position: 45@145.
+	displayBoard addMorph: lineX3 position: 45@245.
+	
+	displayBoard addMorph: lineY1 position: 47@45.
+	displayBoard addMorph: lineY2 position: 149@45.
+	displayBoard addMorph: lineY3 position: 249@45.
+	
+	
+	testMode = 'Off'
+		ifTrue: [ displayBoard openInWorld ].
+	
+	^ displayBoard.
+		
+	! !
+
+
+!classDefinition: #TerniLapilliDisplayToken category: #'TerniLapilli - Ejercicio'!
+TerniLapilliDisplay subclass: #TerniLapilliDisplayToken
+	instanceVariableNames: 'displayToken'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TerniLapilli - Ejercicio'!
+
+!TerniLapilliDisplayToken methodsFor: 'as yet unclassified' stamp: 'FE 6/14/2020 14:26:38'!
+initializeWith: aColor
+
+	displayToken := EllipseMorph new color: aColor.	
+	
+	^displayToken.
+	
+	! !
+
+
+!classDefinition: #Token category: #'TerniLapilli - Ejercicio'!
+Object subclass: #Token
+	instanceVariableNames: 'position displayToken'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TerniLapilli - Ejercicio'!
+
+!Token methodsFor: 'as yet unclassified' stamp: 'FE 6/14/2020 14:33:11'!
+display
+	
+	^displayToken. 
+
+	! !
+
+!Token methodsFor: 'as yet unclassified' stamp: 'FE 6/14/2020 13:51:01'!
 initialize
 
-	super initialize! !
+	self subclassResponsibility. ! !
 
 !Token methodsFor: 'as yet unclassified' stamp: 'SC 6/13/2020 20:32:27'!
 kind 
 
 	self subclassResponsibility ! !
+
+!Token methodsFor: 'as yet unclassified' stamp: 'FE 6/14/2020 14:33:11'!
+moveDisplay: aPosition
+
+	displayToken morphPosition: aPosition.! !
 
 
 !classDefinition: #TokenO category: #'TerniLapilli - Ejercicio'!
@@ -425,6 +505,12 @@ Token subclass: #TokenO
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TerniLapilli - Ejercicio'!
+
+!TokenO methodsFor: 'as yet unclassified' stamp: 'FE 6/14/2020 14:33:11'!
+initialize
+
+	displayToken := TerniLapilliDisplayToken new initializeWith: Color red.
+! !
 
 !TokenO methodsFor: 'as yet unclassified' stamp: 'SC 6/13/2020 20:32:01'!
 kind
@@ -438,6 +524,11 @@ Token subclass: #TokenX
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TerniLapilli - Ejercicio'!
+
+!TokenX methodsFor: 'as yet unclassified' stamp: 'FE 6/14/2020 14:33:11'!
+initialize
+
+	displayToken := TerniLapilliDisplayToken new initializeWith: Color blue.! !
 
 !TokenX methodsFor: 'as yet unclassified' stamp: 'SC 6/13/2020 20:32:08'!
 kind 
