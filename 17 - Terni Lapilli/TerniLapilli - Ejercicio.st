@@ -227,6 +227,17 @@ test18NoSePuedeMoverAPosicionesNoVecinas
 	
 	! !
 
+!TerniLapilliTest methodsFor: 'test' stamp: 'SC 6/16/2020 17:10:20'!
+test19ElJugadorOGanaCon3EnLinea
+
+	game := TerniLapilli new.
+	
+	self doPuts: {1@1 . 2@1 . 1@2 . 2@2 . 3@1 . 2@3} In: game .
+	
+	self assert: game hasOPlayerWon.
+	
+	! !
+
 
 !classDefinition: #TerniLapilli category: #'TerniLapilli - Ejercicio'!
 Object subclass: #TerniLapilli
@@ -242,6 +253,11 @@ board
 		
 	! !
 
+!TerniLapilli methodsFor: 'access' stamp: 'SC 6/16/2020 17:10:52'!
+hasOPlayerWon
+
+	^board hasOThreeInLine! !
+
 !TerniLapilli methodsFor: 'access' stamp: 'SC 6/15/2020 19:46:34'!
 hasTokenOInPosition: aPosition
 
@@ -252,10 +268,15 @@ hasTokenXInPosition: aPosition
 
 	^board hasTokenXInPosition: aPosition ! !
 
-!TerniLapilli methodsFor: 'access' stamp: 'SC 6/15/2020 19:20:01'!
+!TerniLapilli methodsFor: 'access' stamp: 'SC 6/16/2020 17:10:58'!
+hasXPlayerWon
+
+	^board hasXThreeInLine! !
+
+!TerniLapilli methodsFor: 'access' stamp: 'SC 6/16/2020 17:15:32'!
 isOver
 
-	^board existsThreeInLine! !
+	^state isOver! !
 
 !TerniLapilli methodsFor: 'access' stamp: 'SC 6/15/2020 18:47:51'!
 isPlayingO
@@ -273,10 +294,12 @@ isTied
 	^self isOver not! !
 
 
-!TerniLapilli methodsFor: 'operations' stamp: 'SC 6/15/2020 19:31:40'!
+!TerniLapilli methodsFor: 'operations' stamp: 'SC 6/16/2020 17:13:35'!
 moveOFrom: anOriginPosition To: aDestinyPosition
 
 	state moveOFrom: anOriginPosition To: aDestinyPosition from: self.
+	
+	self updateStateAfterOPlayed.
 	
 ! !
 
@@ -287,10 +310,12 @@ moveOOnStateOFrom: anOriginPosition To: aDestinyPosition
 	
 ! !
 
-!TerniLapilli methodsFor: 'operations' stamp: 'SC 6/15/2020 19:31:23'!
+!TerniLapilli methodsFor: 'operations' stamp: 'SC 6/16/2020 17:13:26'!
 moveXFrom: anOriginPosition To: aDestinyPosition
 
 	state moveXFrom: anOriginPosition To: aDestinyPosition from: self.
+	
+	self updateStateAfterXPlayed.
 	
 ! !
 
@@ -301,33 +326,43 @@ moveXOnStateXFrom: anOriginPosition To: aDestinyPosition
 	
 ! !
 
-!TerniLapilli methodsFor: 'operations' stamp: 'SC 6/15/2020 19:21:00'!
+!TerniLapilli methodsFor: 'operations' stamp: 'SC 6/16/2020 17:14:37'!
 putOAt: aPosition
 
 	state putOAt: aPosition from: self.
 	
-	(self isOver)
-		ifTrue: [state _ TerniLapilliStateGameOver new.]
-		ifFalse: [state _ TerniLapilliStatePlayingX new].! !
+	self updateStateAfterOPlayed.! !
 
 !TerniLapilli methodsFor: 'operations' stamp: 'SC 6/15/2020 18:41:22'!
 putOOnStateOAt: aPosition
 
 	board addOAt: aPosition.! !
 
-!TerniLapilli methodsFor: 'operations' stamp: 'SC 6/15/2020 19:16:29'!
+!TerniLapilli methodsFor: 'operations' stamp: 'SC 6/16/2020 17:14:32'!
 putXAt: aPosition
 
 	state putXAt: aPosition from: self.
 	
-	(self isOver)
-		ifTrue: [state _ TerniLapilliStateGameOver new.]
-		ifFalse: [state _ TerniLapilliStatePlayingO new].! !
+	self updateStateAfterXPlayed.! !
 
 !TerniLapilli methodsFor: 'operations' stamp: 'SC 6/15/2020 18:40:12'!
 putXOnStateXAt: aPosition
 
 	board addXAt: aPosition.! !
+
+!TerniLapilli methodsFor: 'operations' stamp: 'SC 6/16/2020 17:14:21'!
+updateStateAfterOPlayed 
+
+	(board existsThreeInLine)
+		ifTrue: [state _ TerniLapilliStateGameOver new.]
+		ifFalse: [state _ TerniLapilliStatePlayingX new].! !
+
+!TerniLapilli methodsFor: 'operations' stamp: 'SC 6/16/2020 17:14:27'!
+updateStateAfterXPlayed 
+
+	(board existsThreeInLine)
+		ifTrue: [state _ TerniLapilliStateGameOver new.]
+		ifFalse: [state _ TerniLapilliStatePlayingO new].! !
 
 
 !TerniLapilli methodsFor: 'initialize' stamp: 'SC 6/15/2020 18:47:30'!
@@ -391,10 +426,10 @@ allEqual: aListOfNumbers
 	^(aListOfNumbers size = 3) and: [(aListOfNumbers max = aListOfNumbers min) ]
 	! !
 
-!TerniLapilliBoard methodsFor: 'access' stamp: 'SC 6/13/2020 20:40:44'!
+!TerniLapilliBoard methodsFor: 'access' stamp: 'SC 6/16/2020 17:12:19'!
 existsThreeInLine
 
-	^(self hasThreeInLine: xTokens) or: [self hasThreeInLine: oTokens].
+	^self hasXThreeInLine or: [self hasOThreeInLine].
 	
 	! !
 
@@ -403,6 +438,13 @@ hasDiagonal: aListOfPositions
 	
 	^(aListOfPositions = {(1@1) . (2@2) . (3@3)} asSortedCollection) 
 			or: [aListOfPositions = {(1@3) . (2@2) . (3@1)} asSortedCollection].! !
+
+!TerniLapilliBoard methodsFor: 'access' stamp: 'SC 6/16/2020 17:11:57'!
+hasOThreeInLine
+
+	^self hasThreeInLine: oTokens
+	
+	! !
 
 !TerniLapilliBoard methodsFor: 'access' stamp: 'SC 6/15/2020 19:10:34'!
 hasThreeInLine: aListOfPositions
@@ -429,6 +471,13 @@ hasTokenOInPosition: aPosition
 hasTokenXInPosition: aPosition
 
 	^xTokens includes: aPosition .! !
+
+!TerniLapilliBoard methodsFor: 'access' stamp: 'SC 6/16/2020 17:11:51'!
+hasXThreeInLine
+
+	^self hasThreeInLine: xTokens
+	
+	! !
 
 !TerniLapilliBoard methodsFor: 'access' stamp: 'SC 6/13/2020 20:40:44'!
 numberOfTokens
@@ -618,12 +667,12 @@ drawVerticalLineWidth: aWidth AndHeight: aHeight AndColor: aColor AtPosition: aP
 		
 	! !
 
-!TerniLapilliDisplay methodsFor: 'as yet unclassified' stamp: 'FE 6/15/2020 22:51:22'!
+!TerniLapilliDisplay methodsFor: 'as yet unclassified' stamp: 'SC 6/16/2020 17:19:41'!
 initializeWith: aSize
 
 	| testMode |
 	
-	testMode := 'On'.
+	testMode := 'Off'.
 
 	displayBoard := RectangleLikeMorph new.
 	displayBoard morphHeight: aSize y.
@@ -670,6 +719,11 @@ Object subclass: #TerniLapilliState
 	poolDictionaries: ''
 	category: 'TerniLapilli - Ejercicio'!
 
+!TerniLapilliState methodsFor: 'access' stamp: 'SC 6/16/2020 17:15:43'!
+isOver
+
+	self subclassResponsibility ! !
+
 !TerniLapilliState methodsFor: 'access' stamp: 'SC 6/15/2020 20:11:57'!
 isPlayingO
 
@@ -708,6 +762,11 @@ TerniLapilliState subclass: #TerniLapilliStateGameOver
 	poolDictionaries: ''
 	category: 'TerniLapilli - Ejercicio'!
 
+!TerniLapilliStateGameOver methodsFor: 'access' stamp: 'SC 6/16/2020 17:15:51'!
+isOver
+
+	^true! !
+
 !TerniLapilliStateGameOver methodsFor: 'access' stamp: 'SC 6/15/2020 19:21:32'!
 isPlayingO
 
@@ -745,6 +804,11 @@ TerniLapilliState subclass: #TerniLapilliStatePlayingO
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TerniLapilli - Ejercicio'!
+
+!TerniLapilliStatePlayingO methodsFor: 'access' stamp: 'SC 6/16/2020 17:16:07'!
+isOver
+
+	^false! !
 
 !TerniLapilliStatePlayingO methodsFor: 'access' stamp: 'SC 6/15/2020 18:46:40'!
 isPlayingO
@@ -789,6 +853,11 @@ TerniLapilliState subclass: #TerniLapilliStatePlayingX
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TerniLapilli - Ejercicio'!
+
+!TerniLapilliStatePlayingX methodsFor: 'access' stamp: 'SC 6/16/2020 17:16:01'!
+isOver
+
+	^false! !
 
 !TerniLapilliStatePlayingX methodsFor: 'access' stamp: 'SC 6/15/2020 18:46:21'!
 isPlayingO
