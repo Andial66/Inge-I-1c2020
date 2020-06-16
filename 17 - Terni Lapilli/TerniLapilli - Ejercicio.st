@@ -380,7 +380,7 @@ tokensLimitError
 
 !classDefinition: #TerniLapilliBoard category: #'TerniLapilli - Ejercicio'!
 Object subclass: #TerniLapilliBoard
-	instanceVariableNames: 'xTokens oTokens displayBoard'
+	instanceVariableNames: 'xTokens oTokens displayBoard xTokensDisplay oTokensDisplay'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TerniLapilli - Ejercicio'!
@@ -471,21 +471,26 @@ validateXMoveFrom: anOriginPosition To: aDestinyPosition
 		ifFalse: [self error: self class invalidPlayError ].! !
 
 
-!TerniLapilliBoard methodsFor: 'operations' stamp: 'SC 6/15/2020 18:59:08'!
+!TerniLapilliBoard methodsFor: 'operations' stamp: 'FE 6/15/2020 22:27:47'!
 addOAt: aPosition
 	
 	self validateAdd: aPosition.
 	
-	oTokens add: aPosition.! !
-
-!TerniLapilliBoard methodsFor: 'operations' stamp: 'SC 6/15/2020 18:58:54'!
-addXAt: aPosition
+	oTokens add: aPosition.
 	
+	" Codigo Parte Grafica "
+	self refreshDisplay.! !
+
+!TerniLapilliBoard methodsFor: 'operations' stamp: 'FE 6/15/2020 22:28:00'!
+addXAt: aPosition
+		
 	self validateAdd: aPosition.
 	
-	xTokens add: aPosition.! !
+	xTokens add: aPosition.
+	
+	self refreshDisplay.! !
 
-!TerniLapilliBoard methodsFor: 'operations' stamp: 'SC 6/15/2020 19:42:12'!
+!TerniLapilliBoard methodsFor: 'operations' stamp: 'FE 6/15/2020 22:49:28'!
 moveOFrom: anOriginPosition To: aDestinyPosition
 
 	self validateOMoveFrom: anOriginPosition To: aDestinyPosition.
@@ -493,32 +498,55 @@ moveOFrom: anOriginPosition To: aDestinyPosition
 	oTokens remove: anOriginPosition .
 	oTokens add: aDestinyPosition .
 	
-	! !
+	" Codigo Parte Grafica "
+	self refreshDisplay.! !
 
-!TerniLapilliBoard methodsFor: 'operations' stamp: 'SC 6/15/2020 19:40:57'!
+!TerniLapilliBoard methodsFor: 'operations' stamp: 'FE 6/15/2020 22:49:37'!
 moveXFrom: anOriginPosition To: aDestinyPosition
 
+	
 	self validateXMoveFrom: anOriginPosition To: aDestinyPosition.
 	
 	xTokens remove: anOriginPosition .
 	xTokens add: aDestinyPosition .
 	
+	" Codigo Parte Grafica "
+	self refreshDisplay.	
 	! !
 
 
-!TerniLapilliBoard methodsFor: 'display' stamp: 'FE 6/14/2020 14:32:59'!
-displayBoard
+!TerniLapilliBoard methodsFor: 'display' stamp: 'FE 6/15/2020 22:48:35'!
+refreshDisplay
 
-	^displayBoard.! !
+	| tokenODisplay tokenXDisplay |
+	
+	" Codigo Parte Grafica "
+	
+	oTokensDisplay do: [:aTokenDisplay | displayBoard removeMorph: aTokenDisplay].
+	oTokensDisplay removeAll.
+	oTokens do: [:aToken | 
+				tokenODisplay _ TerniLapilliDisplayToken new initializeWith: Color blue.
+				oTokensDisplay add: tokenODisplay.
+				displayBoard addMorph: tokenODisplay position: aToken + 24 +  ((aToken-1)*100).  ].
+			
+	xTokensDisplay do: [:aTokenDisplay | displayBoard removeMorph: aTokenDisplay].
+	xTokensDisplay removeAll.
+	xTokens do: [:aToken | 
+				tokenXDisplay _ TerniLapilliDisplayToken new initializeWith: Color red.
+				xTokensDisplay add: tokenXDisplay .
+				displayBoard addMorph: tokenXDisplay position: aToken + 24 +  ((aToken-1)*100).  ].! !
 
 
-!TerniLapilliBoard methodsFor: 'initialize' stamp: 'SC 6/15/2020 18:45:05'!
+!TerniLapilliBoard methodsFor: 'initialize' stamp: 'FE 6/15/2020 22:47:19'!
 initialize
 
 	super initialize.
 	xTokens := SortedCollection new.
 	oTokens := SortedCollection new.
-	displayBoard := TerniLapilliDisplay new initializeWith: 300@300.! !
+	displayBoard := TerniLapilliDisplay new initializeWith: 300@300.
+	xTokensDisplay := OrderedCollection new.
+	oTokensDisplay := OrderedCollection new.
+	! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -554,10 +582,46 @@ Object subclass: #TerniLapilliDisplay
 	poolDictionaries: ''
 	category: 'TerniLapilli - Ejercicio'!
 
-!TerniLapilliDisplay methodsFor: 'as yet unclassified' stamp: 'SC 6/15/2020 17:40:06'!
+!TerniLapilliDisplay methodsFor: 'as yet unclassified' stamp: 'FE 6/15/2020 20:38:13'!
+drawHorizontalLineWidth: aWidth AndHeight: aHeight AndColor: aColor AtPosition: aPosition
+	
+	| line |
+	
+	line := RectangleLikeMorph new.
+	line morphHeight: aHeight.
+	line morphWidth: aWidth.
+	line color: Color black.
+	
+	displayBoard addMorph: line position: aPosition.
+	
+	
+	
+	
+		
+	! !
+
+!TerniLapilliDisplay methodsFor: 'as yet unclassified' stamp: 'FE 6/15/2020 20:38:57'!
+drawVerticalLineWidth: aWidth AndHeight: aHeight AndColor: aColor AtPosition: aPosition
+	
+	| line |
+	
+	line := RectangleLikeMorph new.
+	line morphHeight: aHeight.
+	line morphWidth: aWidth.
+	line color: Color black.
+	
+	displayBoard addMorph: line position: aPosition.
+	
+	
+	
+	
+		
+	! !
+
+!TerniLapilliDisplay methodsFor: 'as yet unclassified' stamp: 'FE 6/15/2020 22:51:22'!
 initializeWith: aSize
 
-	| lineX1 lineX2 lineX3 lineY1 lineY2 lineY3 testMode |
+	| testMode |
 	
 	testMode := 'On'.
 
@@ -566,49 +630,18 @@ initializeWith: aSize
 	displayBoard morphWidth: aSize x.
 	displayBoard color: Color white.
 	
-	lineX1 := RectangleLikeMorph new.
-	lineX1 morphHeight: 2.
-	lineX1 morphWidth: aSize x - 98.
-	lineX1 color: Color black.
+	self drawHorizontalLineWidth: (aSize x - 98) AndHeight: 2 AndColor: Color black AtPosition: 47@45. 
+	self drawHorizontalLineWidth: (aSize x - 98) AndHeight: 2 AndColor: Color black AtPosition: 47@145. 
+	self drawHorizontalLineWidth: (aSize x - 98) AndHeight: 2 AndColor: Color black AtPosition: 47@245. 
 	
-	lineX2 := RectangleLikeMorph new.
-	lineX2 morphHeight: 2.
-	lineX2 morphWidth: aSize x - 98.
-	lineX2 color: Color black.
-	
-	lineX3 := RectangleLikeMorph new.
-	lineX3 morphHeight: 2.
-	lineX3 morphWidth: aSize x - 98.
-	lineX3 color: Color black.
-	
-	lineY1 := RectangleLikeMorph new.
-	lineY1 morphHeight: aSize y - 98.
-	lineY1 morphWidth: 2.
-	lineY1 color: Color black.
-	
-	lineY2 := RectangleLikeMorph new.
-	lineY2 morphHeight: aSize y - 98.
-	lineY2 morphWidth: 2.
-	lineY2 color: Color black.
-	
-	lineY3 := RectangleLikeMorph new.
-	lineY3 morphHeight: aSize y - 98.
-	lineY3 morphWidth: 2.
-	lineY3 color: Color black.
-	
-	displayBoard addMorph: lineX1 position: 45@45.
-	displayBoard addMorph: lineX2 position: 45@145.
-	displayBoard addMorph: lineX3 position: 45@245.
-	
-	displayBoard addMorph: lineY1 position: 47@45.
-	displayBoard addMorph: lineY2 position: 149@45.
-	displayBoard addMorph: lineY3 position: 249@45.
-	
-	
+	self drawHorizontalLineWidth: 2 AndHeight: (aSize y - 98) AndColor: Color black AtPosition: 47@45. 
+	self drawHorizontalLineWidth: 2 AndHeight: (aSize y - 98) AndColor: Color black AtPosition: 149@45. 
+	self drawHorizontalLineWidth: 2 AndHeight: (aSize y - 98) AndColor: Color black AtPosition: 249@45.
+		
 	testMode = 'Off'
 		ifTrue: [ displayBoard openInWorld ].
 	
-	^ displayBoard.
+	^displayBoard. 
 		
 	! !
 
@@ -620,7 +653,7 @@ TerniLapilliDisplay subclass: #TerniLapilliDisplayToken
 	poolDictionaries: ''
 	category: 'TerniLapilli - Ejercicio'!
 
-!TerniLapilliDisplayToken methodsFor: 'as yet unclassified' stamp: 'FE 6/14/2020 14:26:38'!
+!TerniLapilliDisplayToken methodsFor: 'as yet unclassified' stamp: 'FE 6/15/2020 21:38:37'!
 initializeWith: aColor
 
 	displayToken := EllipseMorph new color: aColor.	
