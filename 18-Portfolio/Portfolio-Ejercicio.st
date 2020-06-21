@@ -354,14 +354,14 @@ test05ReceptiveAccountKnowsRegisteredTransactions
 	self assert: (account hasRegistered: withdraw).
 ! !
 
-!ReceptiveAccountTest methodsFor: 'tests' stamp: 'HAW 5/23/2019 15:20:54'!
+!ReceptiveAccountTest methodsFor: 'tests' stamp: 'FE 6/21/2020 19:52:02'!
 test06ReceptiveAccountDoNotKnowNotRegisteredTransactions
 
 	| account deposit withdraw |
 	
 	account := ReceptiveAccount new.
-	deposit :=  Deposit for: 100.
-	withdraw := Withdraw for: 50.
+	deposit :=  Deposit with: 100.
+	withdraw := Withdraw with: 50.
 		
 	self deny: (account hasRegistered: deposit).
 	self deny: (account hasRegistered:withdraw).
