@@ -1,293 +1,293 @@
 !classDefinition: #PortfolioTest category: #'Portfolio-Ejercicio'!
 TestCase subclass: #PortfolioTest
-	instanceVariableNames: 'portfolio receptiveAccount anotherReceptiveAccount anotherPortfolio anotherPortfolio2'
+	instanceVariableNames: 'portfolioOne accountOne accountTwo portfolioTwo portfolioThree'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'Portfolio-Ejercicio'!
 
-!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'SC 6/18/2020 20:08:53'!
+!PortfolioTest methodsFor: 'tests' stamp: 'FE 6/21/2020 19:18:01'!
 test01CanAddAnAccountToPortfolio
 
-	portfolio := Portfolio new.
-	receptiveAccount := ReceptiveAccount new .
+	portfolioOne := Portfolio new.
+	accountOne := ReceptiveAccount new .
 	
-	portfolio addAccount: receptiveAccount .
+	portfolioOne addAccount: accountOne .
 	
-	self assert: portfolio numberOfAccounts = 1 .! !
+	self assert: portfolioOne numberOfAccounts = 1 .! !
 
-!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'SC 6/18/2020 20:08:48'!
+!PortfolioTest methodsFor: 'tests' stamp: 'FE 6/21/2020 19:18:01'!
 test02CanAddMoreThanOneAccountToPortfolio
 
-	portfolio := Portfolio new.
-	receptiveAccount := ReceptiveAccount new .
-	anotherReceptiveAccount := ReceptiveAccount new .
+	portfolioOne := Portfolio new.
+	accountOne := ReceptiveAccount new .
+	accountTwo := ReceptiveAccount new .
 	
-	portfolio addAccount: receptiveAccount .
-	portfolio addAccount: anotherReceptiveAccount .
+	portfolioOne addAccount: accountOne .
+	portfolioOne addAccount: accountTwo .
 	
-	self assert: portfolio numberOfAccounts = 2 .! !
+	self assert: portfolioOne numberOfAccounts = 2 .! !
 
-!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'SC 6/18/2020 20:23:51'!
+!PortfolioTest methodsFor: 'tests' stamp: 'FE 6/21/2020 19:18:09'!
 test03CanAddAPortfolioToPortfolio
 
-	portfolio := Portfolio new.
-	anotherPortfolio := Portfolio new .
+	portfolioOne := Portfolio new.
+	portfolioTwo := Portfolio new .
 	
-	portfolio addPortfolio: anotherPortfolio .
+	portfolioOne addPortfolio: portfolioTwo .
 	
-	self assert: portfolio numberOfPortfolios = 1 .! !
+	self assert: portfolioOne numberOfPortfolios = 1 .! !
 
-!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'SC 6/18/2020 20:23:34'!
+!PortfolioTest methodsFor: 'tests' stamp: 'FE 6/21/2020 19:18:31'!
 test04CanAddMoreThanOnePortfolioToPortfolio
 
-	portfolio := Portfolio new.
-	anotherPortfolio := Portfolio new .
-	anotherPortfolio2 := Portfolio new.
+	portfolioOne := Portfolio new.
+	portfolioTwo := Portfolio new .
+	portfolioThree := Portfolio new.
 	
-	portfolio addPortfolio: anotherPortfolio .
-	portfolio addPortfolio: anotherPortfolio2 .
+	portfolioOne addPortfolio: portfolioTwo .
+	portfolioOne addPortfolio: portfolioThree .
 	
-	self assert: portfolio numberOfPortfolios = 2 .! !
+	self assert: portfolioOne numberOfPortfolios = 2 .! !
 
-!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'SC 6/18/2020 20:10:01'!
+!PortfolioTest methodsFor: 'tests' stamp: 'FE 6/21/2020 19:18:01'!
 test05AccountIsInPortfolioWhenAdded
 
-	portfolio := Portfolio new.
-	receptiveAccount := ReceptiveAccount new .
+	portfolioOne := Portfolio new.
+	accountOne := ReceptiveAccount new .
 	
-	portfolio addAccount: receptiveAccount .
+	portfolioOne addAccount: accountOne .
 	
-	self assert: (portfolio hasAccount: receptiveAccount).! !
+	self assert: (portfolioOne hasAccount: accountOne).! !
 
-!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'SC 6/18/2020 20:26:03'!
+!PortfolioTest methodsFor: 'tests' stamp: 'FE 6/21/2020 19:18:09'!
 test06PortfolioIsInPortfolioWhenAdded
 
-	portfolio := Portfolio new.
-	anotherPortfolio := Portfolio new .
+	portfolioOne := Portfolio new.
+	portfolioTwo := Portfolio new .
 	
-	portfolio addPortfolio: anotherPortfolio .
+	portfolioOne addPortfolio: portfolioTwo .
 	
-	self assert: (portfolio hasPortfolio: anotherPortfolio).! !
+	self assert: (portfolioOne hasPortfolio: portfolioTwo).! !
 
-!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'SC 6/18/2020 20:11:54'!
+!PortfolioTest methodsFor: 'tests' stamp: 'FE 6/21/2020 19:18:09'!
 test07SameAccountCanBeInManyPortfolios
 
-	portfolio := Portfolio new.
-	anotherPortfolio := Portfolio new .
-	receptiveAccount := ReceptiveAccount new .
+	portfolioOne := Portfolio new.
+	portfolioTwo := Portfolio new .
+	accountOne := ReceptiveAccount new .
 	
-	portfolio addAccount: receptiveAccount .
-	anotherPortfolio addAccount: receptiveAccount .
+	portfolioOne addAccount: accountOne .
+	portfolioTwo addAccount: accountOne .
 	
-	self assert: (portfolio hasAccount: receptiveAccount).
-	self assert: (anotherPortfolio hasAccount: receptiveAccount).! !
+	self assert: (portfolioOne hasAccount: accountOne).
+	self assert: (portfolioTwo hasAccount: accountOne).! !
 
-!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'SC 6/18/2020 20:37:47'!
+!PortfolioTest methodsFor: 'tests' stamp: 'FE 6/21/2020 19:18:01'!
 test08BalanceOfEmptyPortfolioIsZero
 
-	portfolio := Portfolio new.
+	portfolioOne := Portfolio new.
 	
-	self assert: portfolio balance = 0 .! !
+	self assert: portfolioOne balance = 0 .! !
 
-!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'SC 6/18/2020 20:43:13'!
+!PortfolioTest methodsFor: 'tests' stamp: 'FE 6/21/2020 19:18:01'!
 test09BalanceOfPortfolioWithOneAccountIsBalanceOfAccount
 
-	portfolio := Portfolio new.
-	receptiveAccount := ReceptiveAccount new.
+	portfolioOne := Portfolio new.
+	accountOne := ReceptiveAccount new.
 	
-	Deposit register: 100 on: receptiveAccount .
-	Withdraw register: 50 on: receptiveAccount .
+	Deposit register: 100 on: accountOne .
+	Withdraw register: 50 on: accountOne .
 	
-	portfolio addAccount: receptiveAccount .
+	portfolioOne addAccount: accountOne .
 	
-	self assert: portfolio balance = 50 .! !
+	self assert: portfolioOne balance = 50 .! !
 
-!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'SC 6/18/2020 20:43:59'!
+!PortfolioTest methodsFor: 'tests' stamp: 'FE 6/21/2020 19:18:09'!
 test10BalanceOfPortfolioWithOnePortfolioIsBalanceOfPortfolio
 
-	portfolio := Portfolio new.
-	anotherPortfolio := Portfolio new.
-	receptiveAccount := ReceptiveAccount new.
+	portfolioOne := Portfolio new.
+	portfolioTwo := Portfolio new.
+	accountOne := ReceptiveAccount new.
 	
-	Deposit register: 100 on: receptiveAccount .
-	Withdraw register: 50 on: receptiveAccount .
+	Deposit register: 100 on: accountOne .
+	Withdraw register: 50 on: accountOne .
 	
-	anotherPortfolio addAccount: receptiveAccount .
-	portfolio addPortfolio: anotherPortfolio .
+	portfolioTwo addAccount: accountOne .
+	portfolioOne addPortfolio: portfolioTwo .
 	
-	self assert: portfolio balance = 50 .! !
+	self assert: portfolioOne balance = 50 .! !
 
-!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'SC 6/18/2020 21:03:40'!
+!PortfolioTest methodsFor: 'tests' stamp: 'FE 6/21/2020 19:18:01'!
 test11CantAddSameAccountTwiceToPortfolio
 
-	portfolio := Portfolio new.
-	receptiveAccount := ReceptiveAccount new .
+	portfolioOne := Portfolio new.
+	accountOne := ReceptiveAccount new .
 	
-	portfolio addAccount: receptiveAccount .
+	portfolioOne addAccount: accountOne .
 	
-	self should: [ portfolio addAccount: receptiveAccount ]
+	self should: [ portfolioOne addAccount: accountOne ]
 		 raise: Error
 		 withMessageText: Portfolio accountAlreadyRegisteredError .! !
 
-!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'SC 6/18/2020 21:04:28'!
+!PortfolioTest methodsFor: 'tests' stamp: 'FE 6/21/2020 19:18:09'!
 test12CantAddSamePortfolioTwiceToPortfolio
 
-	portfolio := Portfolio new.
-	anotherPortfolio := Portfolio new .
+	portfolioOne := Portfolio new.
+	portfolioTwo := Portfolio new .
 	
-	portfolio addPortfolio: anotherPortfolio .
+	portfolioOne addPortfolio: portfolioTwo .
 	
-	self should: [ portfolio addPortfolio: anotherPortfolio ]
+	self should: [ portfolioOne addPortfolio: portfolioTwo ]
 		 raise: Error
 		 withMessageText: Portfolio portfolioAlreadyRegisteredError .! !
 
-!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'SC 6/18/2020 21:07:16'!
+!PortfolioTest methodsFor: 'tests' stamp: 'FE 6/21/2020 19:18:09'!
 test13CantAddAccountAlreadyRegisteredInOtherPorfolioFromMyPortfolio
 
-	portfolio := Portfolio new.
-	anotherPortfolio := Portfolio new .
-	receptiveAccount := ReceptiveAccount new .
+	portfolioOne := Portfolio new.
+	portfolioTwo := Portfolio new .
+	accountOne := ReceptiveAccount new .
 	
-	anotherPortfolio addAccount: receptiveAccount .
-	portfolio addPortfolio: anotherPortfolio .
+	portfolioTwo addAccount: accountOne .
+	portfolioOne addPortfolio: portfolioTwo .
 	
-	self should: [ portfolio addAccount: receptiveAccount ]
+	self should: [ portfolioOne addAccount: accountOne ]
 		 raise: Error
 		 withMessageText: Portfolio accountAlreadyRegisteredError .! !
 
-!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'SC 6/18/2020 21:05:57'!
+!PortfolioTest methodsFor: 'tests' stamp: 'FE 6/21/2020 19:18:09'!
 test14CantAddPortfolioWithAlreadyRegisteredAccountToPortfolio
 
-	portfolio := Portfolio new.
-	anotherPortfolio := Portfolio new .
-	receptiveAccount := ReceptiveAccount new .
+	portfolioOne := Portfolio new.
+	portfolioTwo := Portfolio new .
+	accountOne := ReceptiveAccount new .
 	
-	portfolio addAccount: receptiveAccount .
-	anotherPortfolio addAccount: receptiveAccount .
+	portfolioOne addAccount: accountOne .
+	portfolioTwo addAccount: accountOne .
 	
-	self should: [ portfolio addPortfolio: anotherPortfolio ]
+	self should: [ portfolioOne addPortfolio: portfolioTwo ]
 		 raise: Error
 		 withMessageText: Portfolio portfolioAlreadyRegisteredError .! !
 
-!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'SC 6/20/2020 20:00:29'!
+!PortfolioTest methodsFor: 'tests' stamp: 'FE 6/21/2020 19:18:09'!
 test15CantAddAccountIfFatherAlreadyHasThatAccount
 
-	portfolio := Portfolio new.
-	anotherPortfolio := Portfolio new .
-	receptiveAccount := ReceptiveAccount new .
+	portfolioOne := Portfolio new.
+	portfolioTwo := Portfolio new .
+	accountOne := ReceptiveAccount new .
 	
-	portfolio addPortfolio: anotherPortfolio .
-	portfolio addAccount: receptiveAccount .
+	portfolioOne addPortfolio: portfolioTwo .
+	portfolioOne addAccount: accountOne .
 	
-	self should: [ anotherPortfolio addAccount: receptiveAccount ]
+	self should: [ portfolioTwo addAccount: accountOne ]
 		 raise: Error
 		 withMessageText: Portfolio accountAlreadyRegisteredError .! !
 
-!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'SC 6/20/2020 20:09:38'!
+!PortfolioTest methodsFor: 'tests' stamp: 'FE 6/21/2020 19:19:46'!
 test16CantAddAccountIfFatherAlreadyHasThatAccount
 
-	portfolio := Portfolio new.
-	anotherPortfolio := Portfolio new .
-	anotherPortfolio2 := Portfolio new.
-	receptiveAccount := ReceptiveAccount new .
+	portfolioOne := Portfolio new.
+	portfolioTwo := Portfolio new .
+	portfolioThree := Portfolio new.
+	accountOne := ReceptiveAccount new .
 	
-	portfolio addPortfolio: anotherPortfolio2 .
-	anotherPortfolio2 addPortfolio: anotherPortfolio .
-	portfolio addAccount: receptiveAccount .
+	portfolioOne addPortfolio: portfolioThree .
+	portfolioThree addPortfolio: portfolioTwo .
+	portfolioOne addAccount: accountOne .
 	
-	self should: [ anotherPortfolio addAccount: receptiveAccount ]
+	self should: [ portfolioTwo addAccount: accountOne ]
 		 raise: Error
 		 withMessageText: Portfolio accountAlreadyRegisteredError .! !
 
-!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'SC 6/20/2020 20:29:20'!
+!PortfolioTest methodsFor: 'tests' stamp: 'FE 6/21/2020 19:23:17'!
 test17CantAddAccountIfFatherAlreadyHasThatAccount
 
-	portfolio := Portfolio new.
-	anotherPortfolio := Portfolio new .
-	anotherPortfolio2 := Portfolio new.
-	receptiveAccount := ReceptiveAccount new .
+	portfolioOne := Portfolio new.
+	portfolioTwo := Portfolio new .
+	portfolioThree := Portfolio new.
+	accountOne := ReceptiveAccount new .
 	
-	portfolio addPortfolio: anotherPortfolio2 .
-	anotherPortfolio2 addPortfolio: anotherPortfolio .
-	portfolio addAccount: receptiveAccount .
+	portfolioOne addPortfolio: portfolioThree .
+	portfolioThree addPortfolio: portfolioTwo .
+	portfolioOne addAccount: accountOne .
 	
-	self should: [ anotherPortfolio addAccount: receptiveAccount ]
+	self should: [ portfolioThree addAccount: accountOne ]
 		 raise: Error
 		 withMessageText: Portfolio accountAlreadyRegisteredError .! !
 
-!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'SC 6/20/2020 20:30:56'!
+!PortfolioTest methodsFor: 'tests' stamp: 'FE 6/21/2020 19:18:31'!
 test18CantAddPortfolioIfItIsAlreadyInTheTree
 
-	portfolio := Portfolio new.
-	anotherPortfolio := Portfolio new .
-	anotherPortfolio2 := Portfolio new.
+	portfolioOne := Portfolio new.
+	portfolioTwo := Portfolio new .
+	portfolioThree := Portfolio new.
 	
-	portfolio addPortfolio: anotherPortfolio2 .
-	portfolio addPortfolio: anotherPortfolio .
+	portfolioOne addPortfolio: portfolioThree .
+	portfolioOne addPortfolio: portfolioTwo .
 	
 	
-	self should: [ anotherPortfolio addPortfolio: anotherPortfolio2 . ]
+	self should: [ portfolioTwo addPortfolio: portfolioThree . ]
 		 raise: Error
 		 withMessageText: Portfolio portfolioAlreadyRegisteredError .! !
 
-!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'SC 6/20/2020 20:40:56'!
+!PortfolioTest methodsFor: 'tests' stamp: 'FE 6/21/2020 19:18:31'!
 test19CantAddPortfolioIfAnAccountFromItIsAlreadyInTheTree
 
-	portfolio := Portfolio new.
-	anotherPortfolio := Portfolio new .
-	anotherPortfolio2 := Portfolio new.
-	receptiveAccount := ReceptiveAccount new.
+	portfolioOne := Portfolio new.
+	portfolioTwo := Portfolio new .
+	portfolioThree := Portfolio new.
+	accountOne := ReceptiveAccount new.
 	
-	portfolio addPortfolio: anotherPortfolio2 .
-	portfolio addAccount: receptiveAccount .
-	anotherPortfolio addAccount: receptiveAccount .
+	portfolioOne addPortfolio: portfolioThree .
+	portfolioOne addAccount: accountOne .
+	portfolioTwo addAccount: accountOne .
 	
-	self should: [ anotherPortfolio2 addPortfolio: anotherPortfolio . ]
+	self should: [ portfolioThree addPortfolio: portfolioTwo . ]
 		 raise: Error
 		 withMessageText: Portfolio portfolioAlreadyRegisteredError .! !
 
-!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'SC 6/20/2020 20:47:39'!
+!PortfolioTest methodsFor: 'tests' stamp: 'FE 6/21/2020 19:18:09'!
 test20CantAddPortfolioIfItIsAnAncestor
 
-	portfolio := Portfolio new.
-	anotherPortfolio := Portfolio new .
+	portfolioOne := Portfolio new.
+	portfolioTwo := Portfolio new .
 	
-	portfolio addPortfolio: anotherPortfolio .
+	portfolioOne addPortfolio: portfolioTwo .
 	
-	self should: [ anotherPortfolio addPortfolio: portfolio . ]
+	self should: [ portfolioTwo addPortfolio: portfolioOne . ]
 		 raise: Error
 		 withMessageText: Portfolio portfolioAlreadyRegisteredError .! !
 
-!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'SC 6/20/2020 19:36:18'!
-testXXPortfolioAccountsReturnsAllAccountsOfChildrenPortfolios
+!PortfolioTest methodsFor: 'tests' stamp: 'FE 6/21/2020 19:28:49'!
+test21PortfolioAccountsReturnsAllAccountsOfChildrenPortfolios
 
 	| allAccounts |
 
-	portfolio := Portfolio new.
-	anotherPortfolio := Portfolio new .
-	receptiveAccount := ReceptiveAccount new .
-	anotherReceptiveAccount := ReceptiveAccount new.
+	portfolioOne := Portfolio new.
+	portfolioTwo := Portfolio new .
+	accountOne := ReceptiveAccount new .
+	accountTwo := ReceptiveAccount new.
 	
-	portfolio addAccount: receptiveAccount .
-	anotherPortfolio addAccount: anotherReceptiveAccount .
+	portfolioOne addAccount: accountOne .
+	portfolioTwo addAccount: accountTwo .
 	
-	portfolio addPortfolio: anotherPortfolio .
+	portfolioOne addPortfolio: portfolioTwo .
 	
-	allAccounts := OrderedCollection with: receptiveAccount with: anotherReceptiveAccount .
+	allAccounts := OrderedCollection with: accountOne with: accountTwo .
 	
-	self assert: portfolio accounts = allAccounts .! !
+	self assert: portfolioOne accounts = allAccounts .! !
 
-!PortfolioTest methodsFor: 'as yet unclassified' stamp: 'SC 6/20/2020 20:25:01'!
-testYYPortfolioLastAncestorsReturnsAllAncestorsFromPortfolio
+!PortfolioTest methodsFor: 'tests' stamp: 'FE 6/21/2020 19:28:57'!
+test22PortfolioLastAncestorsReturnsAllAncestorsFromPortfolio
 
-	portfolio := Portfolio new.
-	anotherPortfolio := Portfolio new .
-	anotherPortfolio2 := Portfolio new.
+	portfolioOne := Portfolio new.
+	portfolioTwo := Portfolio new .
+	portfolioThree := Portfolio new.
 	
-	portfolio addPortfolio: anotherPortfolio .
-	anotherPortfolio addPortfolio: anotherPortfolio2 .
+	portfolioOne addPortfolio: portfolioTwo .
+	portfolioTwo addPortfolio: portfolioThree .
 	
-	self assert: anotherPortfolio2 lastAncestors = (OrderedCollection with: portfolio) .! !
+	self assert: portfolioThree lastAncestors = (OrderedCollection with: portfolioOne) .! !
 
 
 !classDefinition: #ReceptiveAccountTest category: #'Portfolio-Ejercicio'!
@@ -393,29 +393,18 @@ value
 
 	self subclassResponsibility ! !
 
-
-!AccountTransaction methodsFor: 'as yet unclassified' stamp: 'SC 6/18/2020 19:37:47'!
-isDeposit
-
-	self subclassResponsibility ! !
-
-!AccountTransaction methodsFor: 'as yet unclassified' stamp: 'SC 6/18/2020 19:37:51'!
-isWithdraw
-
-	self subclassResponsibility ! !
-
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
 !classDefinition: 'AccountTransaction class' category: #'Portfolio-Ejercicio'!
 AccountTransaction class
 	instanceVariableNames: ''!
 
-!AccountTransaction class methodsFor: 'instance creation' stamp: 'NR 10/17/2019 03:22:00'!
+!AccountTransaction class methodsFor: 'instance creation' stamp: 'FE 6/21/2020 19:47:47'!
 register: aValue on: account
 
 	| transaction |
 	
-	transaction := self for: aValue.
+	transaction := self with: aValue.
 	account register: transaction.
 		
 	^ transaction! !
@@ -428,8 +417,8 @@ AccountTransaction subclass: #Deposit
 	poolDictionaries: ''
 	category: 'Portfolio-Ejercicio'!
 
-!Deposit methodsFor: 'initialization' stamp: 'HernanWilkinson 7/13/2011 18:45'!
-initializeFor: aValue
+!Deposit methodsFor: 'initialization' stamp: 'FE 6/21/2020 19:42:19'!
+initializeWith: aValue
 
 	value := aValue ! !
 
@@ -450,10 +439,10 @@ valueForBalance
 Deposit class
 	instanceVariableNames: ''!
 
-!Deposit class methodsFor: 'instance creation' stamp: 'HernanWilkinson 7/13/2011 18:38'!
-for: aValue
+!Deposit class methodsFor: 'instance creation' stamp: 'FE 6/21/2020 19:43:06'!
+with: aValue
 
-	^ self new initializeFor: aValue ! !
+	^ self new initializeWith: aValue ! !
 
 
 !classDefinition: #Withdraw category: #'Portfolio-Ejercicio'!
@@ -463,8 +452,8 @@ AccountTransaction subclass: #Withdraw
 	poolDictionaries: ''
 	category: 'Portfolio-Ejercicio'!
 
-!Withdraw methodsFor: 'initialization' stamp: 'HernanWilkinson 7/13/2011 18:46'!
-initializeFor: aValue
+!Withdraw methodsFor: 'initialization' stamp: 'FE 6/21/2020 19:42:32'!
+initializeWith: aValue
 
 	value := aValue ! !
 
@@ -474,10 +463,10 @@ value
 
 	^ value! !
 
-!Withdraw methodsFor: 'value' stamp: 'SC 6/18/2020 20:31:35'!
+!Withdraw methodsFor: 'value' stamp: 'FE 6/21/2020 19:46:29'!
 valueForBalance
 
-	^value*(-1)! !
+	^ value*(-1)! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -485,10 +474,10 @@ valueForBalance
 Withdraw class
 	instanceVariableNames: ''!
 
-!Withdraw class methodsFor: 'instance creation' stamp: 'HernanWilkinson 7/13/2011 18:33'!
-for: aValue
+!Withdraw class methodsFor: 'instance creation' stamp: 'FE 6/21/2020 19:43:20'!
+with: aValue
 
-	^ self new initializeFor: aValue ! !
+	^ self new initializeWith: aValue ! !
 
 
 !classDefinition: #Portfolio category: #'Portfolio-Ejercicio'!
@@ -498,21 +487,38 @@ Object subclass: #Portfolio
 	poolDictionaries: ''
 	category: 'Portfolio-Ejercicio'!
 
-!Portfolio methodsFor: 'as yet unclassified' stamp: 'SC 6/20/2020 19:37:06'!
-accounts
+!Portfolio methodsFor: 'balance' stamp: 'SC 6/18/2020 20:40:01'!
+balance
 
-	^accounts , (portfolios inject: OrderedCollection new 
-				                 into: [ :acum :aPortfolio | acum , aPortfolio accounts ])
-		! !
+	^self balanceOfAccounts + self balanceOfPortfolios! !
 
-!Portfolio methodsFor: 'as yet unclassified' stamp: 'SC 6/20/2020 20:32:10'!
+!Portfolio methodsFor: 'balance' stamp: 'SC 6/18/2020 20:40:54'!
+balanceOfAccounts
+
+	^accounts sum: [ :anAccount | anAccount balance] ifEmpty: [0]! !
+
+!Portfolio methodsFor: 'balance' stamp: 'SC 6/18/2020 20:40:36'!
+balanceOfPortfolios
+
+	^portfolios sum: [ :aPortfolio | aPortfolio balance] ifEmpty: [0]! !
+
+
+!Portfolio methodsFor: 'initialization' stamp: 'SC 6/20/2020 20:01:24'!
+initialize
+
+	accounts := OrderedCollection new.
+	portfolios := OrderedCollection new.
+	parents := OrderedCollection new.! !
+
+
+!Portfolio methodsFor: 'operations' stamp: 'SC 6/20/2020 20:32:10'!
 addAccount: anAccount
 
 	(self parentsHaveAccount: anAccount)
 		ifTrue: [ self error: self class accountAlreadyRegisteredError ]
 		ifFalse: [ accounts add: anAccount. ] .! !
 
-!Portfolio methodsFor: 'as yet unclassified' stamp: 'SC 6/20/2020 20:38:29'!
+!Portfolio methodsFor: 'operations' stamp: 'SC 6/20/2020 20:38:29'!
 addPortfolio: aPortfolio
 
 	(self parentsHavePortfolio: aPortfolio) | (self parentsHaveAccountsFrom: aPortfolio)
@@ -522,80 +528,66 @@ addPortfolio: aPortfolio
 		
 		! !
 
-!Portfolio methodsFor: 'as yet unclassified' stamp: 'SC 6/18/2020 20:40:01'!
-balance
 
-	^self balanceOfAccounts + self balanceOfPortfolios! !
+!Portfolio methodsFor: 'access' stamp: 'SC 6/20/2020 19:37:06'!
+accounts
 
-!Portfolio methodsFor: 'as yet unclassified' stamp: 'SC 6/18/2020 20:40:54'!
-balanceOfAccounts
+	^accounts , (portfolios inject: OrderedCollection new 
+				                 into: [ :acum :aPortfolio | acum , aPortfolio accounts ])
+		! !
 
-	^accounts sum: [ :anAccount | anAccount balance] ifEmpty: [0]! !
-
-!Portfolio methodsFor: 'as yet unclassified' stamp: 'SC 6/18/2020 20:40:36'!
-balanceOfPortfolios
-
-	^portfolios sum: [ :aPortfolio | aPortfolio balance] ifEmpty: [0]! !
-
-!Portfolio methodsFor: 'as yet unclassified' stamp: 'SC 6/20/2020 20:04:53'!
+!Portfolio methodsFor: 'access' stamp: 'SC 6/20/2020 20:04:53'!
 hasAccount: anAccount
 
 	^(accounts includes: anAccount)
 		or: [portfolios inject: false into: [ :acum :aPortfolio | acum | (aPortfolio hasAccount: anAccount) ] ]! !
 
-!Portfolio methodsFor: 'as yet unclassified' stamp: 'SC 6/20/2020 19:43:57'!
+!Portfolio methodsFor: 'access' stamp: 'SC 6/20/2020 19:43:57'!
 hasAccountsFrom: aPortfolio
 
 	^aPortfolio accounts inject: false into: [ :acum :anAccount | acum | self hasAccount: anAccount ].! !
 
-!Portfolio methodsFor: 'as yet unclassified' stamp: 'SC 6/20/2020 20:49:13'!
+!Portfolio methodsFor: 'access' stamp: 'SC 6/20/2020 20:49:13'!
 hasPortfolio: aPortfolio
 
 	^(portfolios includes: aPortfolio) | (aPortfolio = self).! !
 
-!Portfolio methodsFor: 'as yet unclassified' stamp: 'SC 6/20/2020 20:01:24'!
-initialize
-
-	accounts := OrderedCollection new.
-	portfolios := OrderedCollection new.
-	parents := OrderedCollection new.! !
-
-!Portfolio methodsFor: 'as yet unclassified' stamp: 'SC 6/20/2020 20:24:46'!
+!Portfolio methodsFor: 'access' stamp: 'SC 6/20/2020 20:24:46'!
 lastAncestors
 
 	^(parents inject: OrderedCollection new into: [ :acum :aParent | acum , aParent lastAncestors]) 
 			    ifEmpty: [OrderedCollection with: self]! !
 
-!Portfolio methodsFor: 'as yet unclassified' stamp: 'SC 6/20/2020 20:27:42'!
+!Portfolio methodsFor: 'access' stamp: 'SC 6/20/2020 20:27:42'!
 numberOfAccounts
 
 	^self accounts size .! !
 
-!Portfolio methodsFor: 'as yet unclassified' stamp: 'SC 6/18/2020 20:24:14'!
+!Portfolio methodsFor: 'access' stamp: 'SC 6/18/2020 20:24:14'!
 numberOfPortfolios
 
 	^portfolios size! !
 
-!Portfolio methodsFor: 'as yet unclassified' stamp: 'SC 6/20/2020 20:08:36'!
+!Portfolio methodsFor: 'access' stamp: 'SC 6/20/2020 20:08:36'!
 parents
 
 	^parents! !
 
-!Portfolio methodsFor: 'as yet unclassified' stamp: 'SC 6/20/2020 20:33:19'!
+!Portfolio methodsFor: 'access' stamp: 'SC 6/20/2020 20:33:19'!
 parentsHaveAccount: anAccount
 
 	^(self lastAncestors) inject: false into: [ :acum :aParent | acum | aParent hasAccount: anAccount ] .
 
 	! !
 
-!Portfolio methodsFor: 'as yet unclassified' stamp: 'SC 6/20/2020 20:40:24'!
+!Portfolio methodsFor: 'access' stamp: 'SC 6/20/2020 20:40:24'!
 parentsHaveAccountsFrom: aPortfolio
 
 	^(self lastAncestors) inject: false into: [ :acum :aParent | acum | aParent hasAccountsFrom: aPortfolio ] .
 
 	! !
 
-!Portfolio methodsFor: 'as yet unclassified' stamp: 'SC 6/20/2020 20:34:42'!
+!Portfolio methodsFor: 'access' stamp: 'SC 6/20/2020 20:34:42'!
 parentsHavePortfolio: aPortfolio
 
 	^(self lastAncestors) inject: false into: [ :acum :aParent | acum | aParent hasPortfolio: aPortfolio ] .
