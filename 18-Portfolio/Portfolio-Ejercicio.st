@@ -5,7 +5,7 @@ TestCase subclass: #PortfolioTest
 	poolDictionaries: ''
 	category: 'Portfolio-Ejercicio'!
 
-!PortfolioTest methodsFor: 'tests' stamp: 'FE 6/21/2020 19:18:01'!
+!PortfolioTest methodsFor: 'addingTests' stamp: 'FE 6/21/2020 19:18:01'!
 test01CanAddAnAccountToPortfolio
 
 	portfolioOne := Portfolio new.
@@ -15,7 +15,7 @@ test01CanAddAnAccountToPortfolio
 	
 	self assert: portfolioOne numberOfAccounts = 1 .! !
 
-!PortfolioTest methodsFor: 'tests' stamp: 'FE 6/21/2020 19:18:01'!
+!PortfolioTest methodsFor: 'addingTests' stamp: 'FE 6/21/2020 19:18:01'!
 test02CanAddMoreThanOneAccountToPortfolio
 
 	portfolioOne := Portfolio new.
@@ -27,7 +27,7 @@ test02CanAddMoreThanOneAccountToPortfolio
 	
 	self assert: portfolioOne numberOfAccounts = 2 .! !
 
-!PortfolioTest methodsFor: 'tests' stamp: 'FE 6/21/2020 19:18:09'!
+!PortfolioTest methodsFor: 'addingTests' stamp: 'FE 6/21/2020 19:18:09'!
 test03CanAddAPortfolioToPortfolio
 
 	portfolioOne := Portfolio new.
@@ -37,7 +37,7 @@ test03CanAddAPortfolioToPortfolio
 	
 	self assert: portfolioOne numberOfPortfolios = 1 .! !
 
-!PortfolioTest methodsFor: 'tests' stamp: 'FE 6/21/2020 19:18:31'!
+!PortfolioTest methodsFor: 'addingTests' stamp: 'FE 6/21/2020 19:18:31'!
 test04CanAddMoreThanOnePortfolioToPortfolio
 
 	portfolioOne := Portfolio new.
@@ -49,7 +49,7 @@ test04CanAddMoreThanOnePortfolioToPortfolio
 	
 	self assert: portfolioOne numberOfPortfolios = 2 .! !
 
-!PortfolioTest methodsFor: 'tests' stamp: 'FE 6/21/2020 19:18:01'!
+!PortfolioTest methodsFor: 'addingTests' stamp: 'FE 6/21/2020 19:18:01'!
 test05AccountIsInPortfolioWhenAdded
 
 	portfolioOne := Portfolio new.
@@ -59,7 +59,7 @@ test05AccountIsInPortfolioWhenAdded
 	
 	self assert: (portfolioOne hasAccount: accountOne).! !
 
-!PortfolioTest methodsFor: 'tests' stamp: 'FE 6/21/2020 19:18:09'!
+!PortfolioTest methodsFor: 'addingTests' stamp: 'FE 6/21/2020 19:18:09'!
 test06PortfolioIsInPortfolioWhenAdded
 
 	portfolioOne := Portfolio new.
@@ -69,7 +69,7 @@ test06PortfolioIsInPortfolioWhenAdded
 	
 	self assert: (portfolioOne hasPortfolio: portfolioTwo).! !
 
-!PortfolioTest methodsFor: 'tests' stamp: 'FE 6/21/2020 19:18:09'!
+!PortfolioTest methodsFor: 'addingTests' stamp: 'FE 6/21/2020 19:18:09'!
 test07SameAccountCanBeInManyPortfolios
 
 	portfolioOne := Portfolio new.
@@ -82,42 +82,7 @@ test07SameAccountCanBeInManyPortfolios
 	self assert: (portfolioOne hasAccount: accountOne).
 	self assert: (portfolioTwo hasAccount: accountOne).! !
 
-!PortfolioTest methodsFor: 'tests' stamp: 'FE 6/21/2020 19:18:01'!
-test08BalanceOfEmptyPortfolioIsZero
-
-	portfolioOne := Portfolio new.
-	
-	self assert: portfolioOne balance = 0 .! !
-
-!PortfolioTest methodsFor: 'tests' stamp: 'FE 6/21/2020 19:18:01'!
-test09BalanceOfPortfolioWithOneAccountIsBalanceOfAccount
-
-	portfolioOne := Portfolio new.
-	accountOne := ReceptiveAccount new.
-	
-	Deposit register: 100 on: accountOne .
-	Withdraw register: 50 on: accountOne .
-	
-	portfolioOne addAccount: accountOne .
-	
-	self assert: portfolioOne balance = 50 .! !
-
-!PortfolioTest methodsFor: 'tests' stamp: 'FE 6/21/2020 19:18:09'!
-test10BalanceOfPortfolioWithOnePortfolioIsBalanceOfPortfolio
-
-	portfolioOne := Portfolio new.
-	portfolioTwo := Portfolio new.
-	accountOne := ReceptiveAccount new.
-	
-	Deposit register: 100 on: accountOne .
-	Withdraw register: 50 on: accountOne .
-	
-	portfolioTwo addAccount: accountOne .
-	portfolioOne addPortfolio: portfolioTwo .
-	
-	self assert: portfolioOne balance = 50 .! !
-
-!PortfolioTest methodsFor: 'tests' stamp: 'FE 6/21/2020 19:18:01'!
+!PortfolioTest methodsFor: 'addingTests' stamp: 'FE 6/21/2020 19:18:01'!
 test11CantAddSameAccountTwiceToPortfolio
 
 	portfolioOne := Portfolio new.
@@ -129,7 +94,7 @@ test11CantAddSameAccountTwiceToPortfolio
 		 raise: Error
 		 withMessageText: Portfolio accountAlreadyRegisteredError .! !
 
-!PortfolioTest methodsFor: 'tests' stamp: 'FE 6/21/2020 19:18:09'!
+!PortfolioTest methodsFor: 'addingTests' stamp: 'FE 6/21/2020 19:18:09'!
 test12CantAddSamePortfolioTwiceToPortfolio
 
 	portfolioOne := Portfolio new.
@@ -141,7 +106,7 @@ test12CantAddSamePortfolioTwiceToPortfolio
 		 raise: Error
 		 withMessageText: Portfolio portfolioAlreadyRegisteredError .! !
 
-!PortfolioTest methodsFor: 'tests' stamp: 'FE 6/21/2020 19:18:09'!
+!PortfolioTest methodsFor: 'addingTests' stamp: 'FE 6/21/2020 19:18:09'!
 test13CantAddAccountAlreadyRegisteredInOtherPorfolioFromMyPortfolio
 
 	portfolioOne := Portfolio new.
@@ -155,7 +120,7 @@ test13CantAddAccountAlreadyRegisteredInOtherPorfolioFromMyPortfolio
 		 raise: Error
 		 withMessageText: Portfolio accountAlreadyRegisteredError .! !
 
-!PortfolioTest methodsFor: 'tests' stamp: 'FE 6/21/2020 19:18:09'!
+!PortfolioTest methodsFor: 'addingTests' stamp: 'FE 6/21/2020 19:18:09'!
 test14CantAddPortfolioWithAlreadyRegisteredAccountToPortfolio
 
 	portfolioOne := Portfolio new.
@@ -169,7 +134,7 @@ test14CantAddPortfolioWithAlreadyRegisteredAccountToPortfolio
 		 raise: Error
 		 withMessageText: Portfolio portfolioAlreadyRegisteredError .! !
 
-!PortfolioTest methodsFor: 'tests' stamp: 'FE 6/21/2020 19:18:09'!
+!PortfolioTest methodsFor: 'addingTests' stamp: 'FE 6/21/2020 19:18:09'!
 test15CantAddAccountIfFatherAlreadyHasThatAccount
 
 	portfolioOne := Portfolio new.
@@ -183,8 +148,8 @@ test15CantAddAccountIfFatherAlreadyHasThatAccount
 		 raise: Error
 		 withMessageText: Portfolio accountAlreadyRegisteredError .! !
 
-!PortfolioTest methodsFor: 'tests' stamp: 'FE 6/21/2020 19:19:46'!
-test16CantAddAccountIfFatherAlreadyHasThatAccount
+!PortfolioTest methodsFor: 'addingTests' stamp: 'SC 6/22/2020 10:14:19'!
+test16CantAddAccountIfLastAncestorAlreadyHasThatAccount
 
 	portfolioOne := Portfolio new.
 	portfolioTwo := Portfolio new .
@@ -199,8 +164,8 @@ test16CantAddAccountIfFatherAlreadyHasThatAccount
 		 raise: Error
 		 withMessageText: Portfolio accountAlreadyRegisteredError .! !
 
-!PortfolioTest methodsFor: 'tests' stamp: 'FE 6/21/2020 19:23:17'!
-test17CantAddAccountIfFatherAlreadyHasThatAccount
+!PortfolioTest methodsFor: 'addingTests' stamp: 'SC 6/22/2020 10:15:25'!
+test17CantAddAccountIfAccountAlreadyInTheTree
 
 	portfolioOne := Portfolio new.
 	portfolioTwo := Portfolio new .
@@ -215,7 +180,7 @@ test17CantAddAccountIfFatherAlreadyHasThatAccount
 		 raise: Error
 		 withMessageText: Portfolio accountAlreadyRegisteredError .! !
 
-!PortfolioTest methodsFor: 'tests' stamp: 'FE 6/21/2020 19:18:31'!
+!PortfolioTest methodsFor: 'addingTests' stamp: 'FE 6/21/2020 19:18:31'!
 test18CantAddPortfolioIfItIsAlreadyInTheTree
 
 	portfolioOne := Portfolio new.
@@ -230,7 +195,7 @@ test18CantAddPortfolioIfItIsAlreadyInTheTree
 		 raise: Error
 		 withMessageText: Portfolio portfolioAlreadyRegisteredError .! !
 
-!PortfolioTest methodsFor: 'tests' stamp: 'FE 6/21/2020 19:18:31'!
+!PortfolioTest methodsFor: 'addingTests' stamp: 'FE 6/21/2020 19:18:31'!
 test19CantAddPortfolioIfAnAccountFromItIsAlreadyInTheTree
 
 	portfolioOne := Portfolio new.
@@ -246,7 +211,7 @@ test19CantAddPortfolioIfAnAccountFromItIsAlreadyInTheTree
 		 raise: Error
 		 withMessageText: Portfolio portfolioAlreadyRegisteredError .! !
 
-!PortfolioTest methodsFor: 'tests' stamp: 'FE 6/21/2020 19:18:09'!
+!PortfolioTest methodsFor: 'addingTests' stamp: 'FE 6/21/2020 19:18:09'!
 test20CantAddPortfolioIfItIsAnAncestor
 
 	portfolioOne := Portfolio new.
@@ -258,8 +223,59 @@ test20CantAddPortfolioIfItIsAnAncestor
 		 raise: Error
 		 withMessageText: Portfolio portfolioAlreadyRegisteredError .! !
 
-!PortfolioTest methodsFor: 'tests' stamp: 'FE 6/21/2020 19:28:49'!
-test21PortfolioAccountsReturnsAllAccountsOfChildrenPortfolios
+!PortfolioTest methodsFor: 'addingTests' stamp: 'SC 6/22/2020 10:16:43'!
+test21CantAddPortfolioIfItIsAChildrenPortfolio
+
+	portfolioOne := Portfolio new.
+	portfolioTwo := Portfolio new .
+	portfolioThree := Portfolio new .
+	
+	portfolioOne addPortfolio: portfolioTwo .
+	portfolioTwo addPortfolio: portfolioThree .
+	
+	self should: [ portfolioOne addPortfolio: portfolioThree . ]
+		 raise: Error
+		 withMessageText: Portfolio portfolioAlreadyRegisteredError .! !
+
+
+!PortfolioTest methodsFor: 'balanceTests' stamp: 'FE 6/21/2020 19:18:01'!
+test08BalanceOfEmptyPortfolioIsZero
+
+	portfolioOne := Portfolio new.
+	
+	self assert: portfolioOne balance = 0 .! !
+
+!PortfolioTest methodsFor: 'balanceTests' stamp: 'FE 6/21/2020 19:18:01'!
+test09BalanceOfPortfolioWithOneAccountIsBalanceOfAccount
+
+	portfolioOne := Portfolio new.
+	accountOne := ReceptiveAccount new.
+	
+	Deposit register: 100 on: accountOne .
+	Withdraw register: 50 on: accountOne .
+	
+	portfolioOne addAccount: accountOne .
+	
+	self assert: portfolioOne balance = 50 .! !
+
+!PortfolioTest methodsFor: 'balanceTests' stamp: 'FE 6/21/2020 19:18:09'!
+test10BalanceOfPortfolioWithOnePortfolioIsBalanceOfPortfolio
+
+	portfolioOne := Portfolio new.
+	portfolioTwo := Portfolio new.
+	accountOne := ReceptiveAccount new.
+	
+	Deposit register: 100 on: accountOne .
+	Withdraw register: 50 on: accountOne .
+	
+	portfolioTwo addAccount: accountOne .
+	portfolioOne addPortfolio: portfolioTwo .
+	
+	self assert: portfolioOne balance = 50 .! !
+
+
+!PortfolioTest methodsFor: 'accessTests' stamp: 'SC 6/22/2020 10:16:54'!
+test22PortfolioAccountsReturnsAllAccountsOfChildrenPortfolios
 
 	| allAccounts |
 
@@ -277,8 +293,8 @@ test21PortfolioAccountsReturnsAllAccountsOfChildrenPortfolios
 	
 	self assert: portfolioOne accounts = allAccounts .! !
 
-!PortfolioTest methodsFor: 'tests' stamp: 'FE 6/21/2020 19:28:57'!
-test22PortfolioLastAncestorsReturnsAllAncestorsFromPortfolio
+!PortfolioTest methodsFor: 'accessTests' stamp: 'SC 6/22/2020 10:16:59'!
+test23PortfolioLastAncestorsReturnsAllAncestorsFromPortfolio
 
 	portfolioOne := Portfolio new.
 	portfolioTwo := Portfolio new .
@@ -288,6 +304,18 @@ test22PortfolioLastAncestorsReturnsAllAncestorsFromPortfolio
 	portfolioTwo addPortfolio: portfolioThree .
 	
 	self assert: portfolioThree lastAncestors = (OrderedCollection with: portfolioOne) .! !
+
+!PortfolioTest methodsFor: 'accessTests' stamp: 'SC 6/22/2020 10:27:57'!
+test24PortfolioNumberOfPortfoliosIncludeNumberOfChildrenPortfolios
+
+	portfolioOne := Portfolio new.
+	portfolioTwo := Portfolio new .
+	portfolioThree := Portfolio new.
+	
+	portfolioOne addPortfolio: portfolioTwo .
+	portfolioTwo addPortfolio: portfolioThree .
+	
+	self assert: portfolioOne numberOfPortfolios = 2.! !
 
 
 !classDefinition: #ReceptiveAccountTest category: #'Portfolio-Ejercicio'!
@@ -529,28 +557,49 @@ addPortfolio: aPortfolio
 		! !
 
 
-!Portfolio methodsFor: 'access' stamp: 'SC 6/20/2020 19:37:06'!
+!Portfolio methodsFor: 'access' stamp: 'SC 6/22/2020 10:21:46'!
 accounts
 
-	^accounts , (portfolios inject: OrderedCollection new 
-				                 into: [ :acum :aPortfolio | acum , aPortfolio accounts ])
+	^accounts , self childrenAccounts 
+	
+	
 		! !
 
-!Portfolio methodsFor: 'access' stamp: 'SC 6/20/2020 20:04:53'!
+!Portfolio methodsFor: 'access' stamp: 'SC 6/22/2020 10:22:07'!
+childrenAccounts
+
+	^(portfolios inject: OrderedCollection new 
+				  into: [ :acum :aPortfolio | acum , aPortfolio accounts ])
+	
+	
+		! !
+
+!Portfolio methodsFor: 'access' stamp: 'SC 6/22/2020 10:31:35'!
+childrenPortfoliosHaveAccount: anAccount
+
+	^portfolios inject: false into: [ :acum :aPortfolio | acum | (aPortfolio hasAccount: anAccount) ]! !
+
+!Portfolio methodsFor: 'access' stamp: 'SC 6/22/2020 10:25:29'!
+childrenPortfoliosHavePortfolio: aPortfolio
+
+	^portfolios inject: false into: [ :acum :aChildPortfolio | acum | (aChildPortfolio hasPortfolio: aPortfolio)].! !
+
+!Portfolio methodsFor: 'access' stamp: 'SC 6/22/2020 10:24:16'!
 hasAccount: anAccount
 
 	^(accounts includes: anAccount)
-		or: [portfolios inject: false into: [ :acum :aPortfolio | acum | (aPortfolio hasAccount: anAccount) ] ]! !
+		or: [self childrenPortfoliosHaveAccount: anAccount ]! !
 
 !Portfolio methodsFor: 'access' stamp: 'SC 6/20/2020 19:43:57'!
 hasAccountsFrom: aPortfolio
 
 	^aPortfolio accounts inject: false into: [ :acum :anAccount | acum | self hasAccount: anAccount ].! !
 
-!Portfolio methodsFor: 'access' stamp: 'SC 6/20/2020 20:49:13'!
+!Portfolio methodsFor: 'access' stamp: 'SC 6/22/2020 10:25:43'!
 hasPortfolio: aPortfolio
 
-	^(portfolios includes: aPortfolio) | (aPortfolio = self).! !
+	^(aPortfolio = self) | (portfolios includes: aPortfolio)  
+		or: [self childrenPortfoliosHavePortfolio: aPortfolio ].! !
 
 !Portfolio methodsFor: 'access' stamp: 'SC 6/20/2020 20:24:46'!
 lastAncestors
@@ -563,10 +612,15 @@ numberOfAccounts
 
 	^self accounts size .! !
 
-!Portfolio methodsFor: 'access' stamp: 'SC 6/18/2020 20:24:14'!
+!Portfolio methodsFor: 'access' stamp: 'SC 6/22/2020 10:28:24'!
 numberOfPortfolios
 
-	^portfolios size! !
+	^portfolios size + self numberOfPortfoliosFromChildrenPortfolios! !
+
+!Portfolio methodsFor: 'access' stamp: 'SC 6/22/2020 10:29:07'!
+numberOfPortfoliosFromChildrenPortfolios
+
+	^portfolios sum: [ :aChildrenPortfolio | aChildrenPortfolio numberOfPortfolios ] ifEmpty: [0].! !
 
 !Portfolio methodsFor: 'access' stamp: 'SC 6/20/2020 20:08:36'!
 parents
