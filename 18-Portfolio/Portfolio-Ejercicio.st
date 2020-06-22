@@ -1,6 +1,6 @@
 !classDefinition: #PortfolioTest category: #'Portfolio-Ejercicio'!
 TestCase subclass: #PortfolioTest
-	instanceVariableNames: 'portfolioOne accountOne accountTwo portfolioTwo portfolioThree'
+	instanceVariableNames: 'portfolioOne accountOne accountTwo portfolioTwo portfolioThree deposit withdraw'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'Portfolio-Ejercicio'!
@@ -317,6 +317,72 @@ test24PortfolioNumberOfPortfoliosIncludeNumberOfChildrenPortfolios
 	
 	self assert: portfolioOne numberOfPortfolios = 2.! !
 
+!PortfolioTest methodsFor: 'accessTests' stamp: 'SC 6/22/2020 19:45:47'!
+test25PortfolioWithOnlyOneAccountHasItsTransactions
+
+	portfolioOne := Portfolio new.
+	accountOne := ReceptiveAccount new.
+	
+	deposit := Deposit new initializeWith: 100.
+	
+	accountOne register: deposit. 
+	portfolioOne addAccount: accountOne .
+	
+	self assert: (portfolioOne hasTransaction: deposit).! !
+
+!PortfolioTest methodsFor: 'accessTests' stamp: 'SC 6/22/2020 19:47:26'!
+test26PortfolioHasTransactionsFromChildrenPortfolio
+
+	portfolioOne := Portfolio new.
+	portfolioTwo := Portfolio new.
+	accountOne := ReceptiveAccount new.
+	
+	deposit := Deposit new initializeWith: 100.
+	
+	accountOne register: deposit. 
+	portfolioTwo addAccount: accountOne .
+	portfolioOne addPortfolio: portfolioTwo .
+	
+	self assert: (portfolioOne hasTransaction: deposit).! !
+
+!PortfolioTest methodsFor: 'accessTests' stamp: 'SC 6/22/2020 19:55:14'!
+test27PortfolioHasTransactionsFromHisAccounts
+
+	portfolioOne := Portfolio new.
+	accountOne := ReceptiveAccount new.
+	
+	deposit := Deposit new initializeWith: 100.
+	withdraw := Withdraw new initializeWith: 50.
+	
+	accountOne register: deposit. 
+	accountOne register: withdraw.
+
+	portfolioOne addAccount: accountOne .
+	
+	self assert: (portfolioOne transactions includes: deposit).
+	self assert: (portfolioOne transactions includes: withdraw).
+	self assert: (portfolioOne transactions size = 2)! !
+
+!PortfolioTest methodsFor: 'accessTests' stamp: 'SC 6/22/2020 19:56:03'!
+test28PortfolioHasTransactionsFromHisChildrenPortfolio
+
+	portfolioOne := Portfolio new.
+	portfolioTwo := Portfolio new.
+	accountOne := ReceptiveAccount new.
+	
+	deposit := Deposit new initializeWith: 100.
+	withdraw := Withdraw new initializeWith: 50.
+	
+	accountOne register: deposit. 
+	accountOne register: withdraw.
+
+	portfolioTwo addAccount: accountOne .
+	portfolioOne addPortfolio: portfolioTwo .
+	
+	self assert: (portfolioOne transactions includes: deposit).
+	self assert: (portfolioOne transactions includes: withdraw).
+	self assert: (portfolioOne transactions size = 2)! !
+
 
 !classDefinition: #ReceptiveAccountTest category: #'Portfolio-Ejercicio'!
 TestCase subclass: #ReceptiveAccountTest
@@ -574,6 +640,11 @@ childrenAccounts
 	
 		! !
 
+!Portfolio methodsFor: 'access' stamp: 'SC 6/22/2020 19:48:40'!
+childrenPortfolioHaveTransaction: aTransaction
+
+	^portfolios anySatisfy: [ :aChildrenPortfolio | aChildrenPortfolio hasTransaction: aTransaction ] .! !
+
 !Portfolio methodsFor: 'access' stamp: 'SC 6/22/2020 10:31:35'!
 childrenPortfoliosHaveAccount: anAccount
 
@@ -600,6 +671,12 @@ hasPortfolio: aPortfolio
 
 	^(aPortfolio = self) | (portfolios includes: aPortfolio)  
 		or: [self childrenPortfoliosHavePortfolio: aPortfolio ].! !
+
+!Portfolio methodsFor: 'access' stamp: 'SC 6/22/2020 19:48:13'!
+hasTransaction: aTransaction
+
+	^(accounts anySatisfy: [ :anAccount | anAccount hasRegistered: aTransaction ])
+		or: [self childrenPortfolioHaveTransaction: aTransaction ].! !
 
 !Portfolio methodsFor: 'access' stamp: 'SC 6/20/2020 20:24:46'!
 lastAncestors
@@ -647,6 +724,12 @@ parentsHavePortfolio: aPortfolio
 	^(self lastAncestors) inject: false into: [ :acum :aParent | acum | aParent hasPortfolio: aPortfolio ] .
 
 	! !
+
+!Portfolio methodsFor: 'access' stamp: 'SC 6/22/2020 19:54:35'!
+transactions
+
+	^(self accounts) inject: OrderedCollection new
+				        into: [ :ListOfTransactions :anAccount | ListOfTransactions , anAccount transactions ].! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
