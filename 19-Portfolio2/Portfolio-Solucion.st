@@ -612,6 +612,21 @@ test04TransferWithAmountNegativeIsNotPossible
 		 raise:  Error 
 		 withMessageText: ReceptiveAccount invalidAmmountError .	 ! !
 
+!TransferTest methodsFor: 'testing' stamp: 'SC 6/28/2020 18:26:14'!
+test05TransferKnowsBothLegs
+
+	| transfer |
+
+	accountOne := ReceptiveAccount new .
+	accountTwo := ReceptiveAccount new .
+	
+	Deposit register: 100 on: accountOne .
+	
+	transfer := accountOne transfer: 50 to: accountTwo .
+	
+	self assert: transfer origin = accountOne .
+	self assert: transfer destiny = accountTwo .	 ! !
+
 
 !classDefinition: #Account category: #'Portfolio-Solucion'!
 Object subclass: #Account
@@ -757,7 +772,6 @@ balance
 	^accounts sum: [ :anAccount | anAccount balance ] ifEmpty: [ 0 ]! !
 
 
-
 !Portfolio methodsFor: 'reports' stamp: 'FE 6/28/2020 17:17:02'!
 addForReport: aReport
 
@@ -900,7 +914,6 @@ initializeWithName: aName
 	name := aName.! !
 
 
-
 !ReceptiveAccount methodsFor: 'transactions' stamp: 'HAW 5/25/2019 11:38:52'!
 addTransactionsTo: aCollectionOfTransactions
 
@@ -1037,8 +1050,8 @@ value
 	self subclassResponsibility ! !
 
 
-!AccountTransaction methodsFor: 'report' stamp: 'SC 6/25/2020 20:45:19'!
-yyy: aReport
+!AccountTransaction methodsFor: 'report' stamp: 'SC 6/28/2020 18:21:36'!
+addForReport: aReport
 
 	self subclassResponsibility ! !
 
@@ -1114,7 +1127,7 @@ AccountTransaction subclass: #TransactionTransfer
 	poolDictionaries: ''
 	category: 'Portfolio-Solucion'!
 
-!TransactionTransfer methodsFor: 'as yet unclassified' stamp: 'SC 6/25/2020 21:42:56'!
+!TransactionTransfer methodsFor: 'initialize' stamp: 'SC 6/25/2020 21:42:56'!
 from: aTransfer! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
@@ -1136,26 +1149,29 @@ TransactionTransfer subclass: #IncomingTransfer
 	poolDictionaries: ''
 	category: 'Portfolio-Solucion'!
 
-!IncomingTransfer methodsFor: 'as yet unclassified' stamp: 'FE 6/28/2020 17:27:32'!
-addForReport: aReport
+!IncomingTransfer methodsFor: 'value' stamp: 'SC 6/25/2020 21:47:39'!
+value 
 
-	aReport addIncomingTransfer: self! !
+	 ^ transfer value! !
 
-!IncomingTransfer methodsFor: 'as yet unclassified' stamp: 'SC 6/25/2020 21:46:59'!
+
+!IncomingTransfer methodsFor: 'balance' stamp: 'SC 6/25/2020 21:46:59'!
 affectBalance: aBalance
 
 	 ^ aBalance + self value! !
 
-!IncomingTransfer methodsFor: 'as yet unclassified' stamp: 'SC 6/25/2020 21:35:02'!
+
+!IncomingTransfer methodsFor: 'report' stamp: 'FE 6/28/2020 17:27:32'!
+addForReport: aReport
+
+	aReport addIncomingTransfer: self! !
+
+
+!IncomingTransfer methodsFor: 'initialization' stamp: 'SC 6/25/2020 21:35:02'!
 from: aTransfer
 
 	transfer := aTransfer
 	! !
-
-!IncomingTransfer methodsFor: 'as yet unclassified' stamp: 'SC 6/25/2020 21:47:39'!
-value 
-
-	 ^ transfer value! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -1176,25 +1192,28 @@ TransactionTransfer subclass: #OutgoingTransfer
 	poolDictionaries: ''
 	category: 'Portfolio-Solucion'!
 
-!OutgoingTransfer methodsFor: 'as yet unclassified' stamp: 'FE 6/28/2020 17:27:44'!
-addForReport: aReport
-
-	aReport addOutgoingTransfer: self! !
-
-!OutgoingTransfer methodsFor: 'as yet unclassified' stamp: 'SC 6/25/2020 21:47:06'!
+!OutgoingTransfer methodsFor: 'balance' stamp: 'SC 6/25/2020 21:47:06'!
 affectBalance: aBalance
 
 	^ aBalance - self value! !
 
-!OutgoingTransfer methodsFor: 'as yet unclassified' stamp: 'SC 6/25/2020 21:43:13'!
-from: aTransfer
 
-	transfer := aTransfer .! !
-
-!OutgoingTransfer methodsFor: 'as yet unclassified' stamp: 'SC 6/25/2020 21:47:33'!
+!OutgoingTransfer methodsFor: 'value' stamp: 'SC 6/25/2020 21:47:33'!
 value
 
 	^ transfer value! !
+
+
+!OutgoingTransfer methodsFor: 'report' stamp: 'FE 6/28/2020 17:27:44'!
+addForReport: aReport
+
+	aReport addOutgoingTransfer: self! !
+
+
+!OutgoingTransfer methodsFor: 'initialization' stamp: 'SC 6/25/2020 21:43:13'!
+from: aTransfer
+
+	transfer := aTransfer .! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -1478,6 +1497,16 @@ from: anOriginAccount to: aDestinyAccount of: aValue
 	value := aValue .
 	! !
 
+
+!Transfer methodsFor: 'accessing' stamp: 'SC 6/28/2020 18:25:15'!
+destiny
+
+	^destiny! !
+
+!Transfer methodsFor: 'accessing' stamp: 'SC 6/28/2020 18:25:08'!
+origin
+
+	^origin! !
 
 !Transfer methodsFor: 'accessing' stamp: 'SC 6/25/2020 21:47:56'!
 value
