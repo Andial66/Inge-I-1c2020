@@ -92,8 +92,8 @@ test08CartRemembersTheNumberOfAddedItems
 	cart add: 2 of: self itemSellByTheStore.
 	self assert: (cart occurrencesOf: self itemSellByTheStore) = 2! !
 
-!CartTest methodsFor: 'tests' stamp: 'FE 7/9/2020 21:00:04'!
-test09LuegoDeAgregarUnElementoAUnCarritoVacioElTotalEsIgualAlValorDelElementoAgregado
+!CartTest methodsFor: 'tests' stamp: 'SC 7/11/2020 16:55:07'!
+test09TotalOfACartWithOneItemIsPriceOfTheItem
 
 	| cart |
 	
@@ -102,8 +102,8 @@ test09LuegoDeAgregarUnElementoAUnCarritoVacioElTotalEsIgualAlValorDelElementoAgr
 	cart add: self itemSellByTheStore.
 	self assert: (cart total = (cart priceList at: self itemSellByTheStore)). ! !
 
-!CartTest methodsFor: 'tests' stamp: 'FE 7/9/2020 21:01:12'!
-test10LuegoDeAgregarUnElementoAUnCarritoConElementosElTotalSigueSiendoCorrecto
+!CartTest methodsFor: 'tests' stamp: 'SC 7/11/2020 16:55:53'!
+test10TotalOfACartEqualsTheSumOfAllItsItemsPrices
 
 	| cart |
 	
@@ -149,7 +149,7 @@ TestCase subclass: #CashierCartTest
 	poolDictionaries: ''
 	category: 'TusLibros'!
 
-!CashierCartTest methodsFor: 'as yet unclassified' stamp: 'FE 7/9/2020 19:48:41'!
+!CashierCartTest methodsFor: 'support' stamp: 'FE 7/9/2020 19:48:41'!
 defaultPriceList
 	
 	| priceList |
@@ -161,13 +161,14 @@ defaultPriceList
 	^ priceList
 	! !
 
-!CashierCartTest methodsFor: 'as yet unclassified' stamp: 'FE 7/9/2020 20:24:18'!
+!CashierCartTest methodsFor: 'support' stamp: 'FE 7/9/2020 20:24:18'!
 itemSellByTheStore
 	
 	^ 'validBook'! !
 
-!CashierCartTest methodsFor: 'as yet unclassified' stamp: 'FE 7/11/2020 15:45:17'!
-test01NoPuedoRealizarUnCheckOutDeUnCarritoVacio
+
+!CashierCartTest methodsFor: 'tests' stamp: 'SC 7/11/2020 16:43:57'!
+test01CantCheckOutWithEmptyCart
 
 	| aCashier aCart aCreditCard |
 	
@@ -183,8 +184,8 @@ test01NoPuedoRealizarUnCheckOutDeUnCarritoVacio
 			self assert: aCashier sales isEmpty ]
 ! !
 
-!CashierCartTest methodsFor: 'as yet unclassified' stamp: 'FE 7/9/2020 20:23:52'!
-test02NoPuedoRealizarUnCheckOutConUnaTarjetaVencida
+!CashierCartTest methodsFor: 'tests' stamp: 'SC 7/11/2020 16:43:46'!
+test02CantCheckOutWithInvalidCard
 
 	| aCashier aCart aCreditCard |
 	
@@ -202,8 +203,8 @@ test02NoPuedoRealizarUnCheckOutConUnaTarjetaVencida
 			self assert: anError messageText = aCashier creditCardExpirationError . 
 			self assert: aCashier sales isEmpty ]! !
 
-!CashierCartTest methodsFor: 'as yet unclassified' stamp: 'FE 7/9/2020 20:26:56'!
-test03AlHacerCheckOutLaVentaEsAgregadaALaListaDeVentas
+!CashierCartTest methodsFor: 'tests' stamp: 'SC 7/11/2020 16:43:34'!
+test03CashierHasASaleAfterACartCheckOut
 
 	| aCashier aCart aCreditCard |
 	
@@ -218,8 +219,8 @@ test03AlHacerCheckOutLaVentaEsAgregadaALaListaDeVentas
 	
 	self deny: aCashier sales isEmpty.! !
 
-!CashierCartTest methodsFor: 'as yet unclassified' stamp: 'FE 7/9/2020 21:21:41'!
-test04AlHacerElCheckOutElCarritoEsVaciado
+!CashierCartTest methodsFor: 'tests' stamp: 'SC 7/11/2020 16:42:53'!
+test04CartsAreEmptyAfterCheckOut
 
 	| aCashier aCart aCreditCard |
 	
@@ -234,6 +235,45 @@ test04AlHacerElCheckOutElCarritoEsVaciado
 	
 	self assert: aCart isEmpty .! !
 
+!CashierCartTest methodsFor: 'tests' stamp: 'SC 7/11/2020 16:40:32'!
+test05CashierRemembersASale
+
+	| aCashier aCart aCreditCard cartTotal |
+	
+	aCashier := CashierCart new.
+	aCart := Cart acceptingItemsOf: self defaultPriceList .
+	aCart add: self itemSellByTheStore.
+	
+	cartTotal := aCart total .
+	
+	aCreditCard := CreditCard new.
+	aCreditCard initializeWithANumber: '1234567812345678' name: 'John' expiration: '102020' andCode: '312'.
+	
+	aCashier checkOutOf: aCart with: aCreditCard. 
+	
+	self assert: aCashier salesTotal = cartTotal .! !
+
+!CashierCartTest methodsFor: 'tests' stamp: 'SC 7/11/2020 16:42:14'!
+test06CashierRemembersTwoSales
+
+	| aCashier aCart anotherCart aCreditCard salesTotal |
+	
+	aCashier := CashierCart new.
+	aCart := Cart acceptingItemsOf: self defaultPriceList .
+	anotherCart := Cart acceptingItemsOf: self defaultPriceList .
+	aCart add: self itemSellByTheStore.
+	anotherCart add: self itemSellByTheStore.
+	
+	salesTotal := aCart total + anotherCart total.
+	
+	aCreditCard := CreditCard new.
+	aCreditCard initializeWithANumber: '1234567812345678' name: 'John' expiration: '102020' andCode: '312'.
+	
+	aCashier checkOutOf: aCart with: aCreditCard. 
+	aCashier checkOutOf: anotherCart with: aCreditCard.
+	
+	self assert: aCashier salesTotal = salesTotal .! !
+
 
 !classDefinition: #CreditCardTest category: #TusLibros!
 TestCase subclass: #CreditCardTest
@@ -242,8 +282,8 @@ TestCase subclass: #CreditCardTest
 	poolDictionaries: ''
 	category: 'TusLibros'!
 
-!CreditCardTest methodsFor: 'tests' stamp: 'FE 7/9/2020 20:06:01'!
-test01NoPuedoCrearUnaTarjetaConUnNumeroInvalido
+!CreditCardTest methodsFor: 'tests' stamp: 'SC 7/11/2020 16:56:27'!
+test01CantCreateCardWithInvalidNumber
 
 	| aCreditCard |
 	
@@ -260,8 +300,8 @@ test01NoPuedoCrearUnaTarjetaConUnNumeroInvalido
 
 	! !
 
-!CreditCardTest methodsFor: 'tests' stamp: 'FE 7/9/2020 20:05:05'!
-test02NoPuedoCrearUnaTarjetaConUnNombreInvalido
+!CreditCardTest methodsFor: 'tests' stamp: 'SC 7/11/2020 16:56:40'!
+test02CantCreateCardWithInvalidName
 
 	| aCreditCard |
 	
@@ -278,8 +318,8 @@ test02NoPuedoCrearUnaTarjetaConUnNombreInvalido
 
 	! !
 
-!CreditCardTest methodsFor: 'tests' stamp: 'FE 7/9/2020 20:19:44'!
-test03NoPuedoCrearUnaTarjetaConUnaFechaDeExpiracionInvalida
+!CreditCardTest methodsFor: 'tests' stamp: 'SC 7/11/2020 16:56:56'!
+test03CantCreateCardWithExpiredDate
 
 	| aCreditCard |
 	
@@ -296,8 +336,8 @@ test03NoPuedoCrearUnaTarjetaConUnaFechaDeExpiracionInvalida
 
 	! !
 
-!CreditCardTest methodsFor: 'tests' stamp: 'FE 7/9/2020 20:06:12'!
-test04NoPuedoCrearUnaTarjetaConUnCodigoDeSeguridadInvalido
+!CreditCardTest methodsFor: 'tests' stamp: 'SC 7/11/2020 16:57:11'!
+test04CantCreateCardWithInvalidSecurityNumber
 
 	| aCreditCard |
 	
@@ -421,22 +461,40 @@ Object subclass: #CashierCart
 	poolDictionaries: ''
 	category: 'TusLibros'!
 
-!CashierCart methodsFor: 'as yet unclassified' stamp: 'FE 7/9/2020 19:58:08'!
-assertIsValidCart: aCart
+!CashierCart methodsFor: 'sales' stamp: 'FE 7/9/2020 20:10:46'!
+sales
+	
+	^ sales.! !
 
-	(aCart isEmpty ) ifTrue: [ self error: self cartIsEmptyError ]! !
+!CashierCart methodsFor: 'sales' stamp: 'SC 7/11/2020 16:34:45'!
+salesTotal
+	
+	^ sales sum: [ :sale | sale total] .! !
 
-!CashierCart methodsFor: 'as yet unclassified' stamp: 'FE 7/9/2020 19:58:19'!
-assertIsValidCreditCard: aCreditCard
 
-	aCreditCard isExpirated ifTrue: [ self error: self creditCardExpirationError ].! !
-
-!CashierCart methodsFor: 'as yet unclassified' stamp: 'FE 7/9/2020 19:58:44'!
+!CashierCart methodsFor: 'errors' stamp: 'FE 7/9/2020 19:58:44'!
 cartIsEmptyError
 
 	^ 'Cant checkout of empty cart.'! !
 
-!CashierCart methodsFor: 'as yet unclassified' stamp: 'FE 7/9/2020 21:23:32'!
+!CashierCart methodsFor: 'errors' stamp: 'FE 7/9/2020 19:58:55'!
+creditCardExpirationError
+
+	^ 'Cant checkout with expirated Credit Card.'! !
+
+
+!CashierCart methodsFor: 'validation' stamp: 'SC 7/11/2020 16:50:44'!
+assertIsValidCart: aCart
+
+	aCart isEmpty ifTrue: [ self error: self cartIsEmptyError ]! !
+
+!CashierCart methodsFor: 'validation' stamp: 'FE 7/9/2020 19:58:19'!
+assertIsValidCreditCard: aCreditCard
+
+	aCreditCard isExpirated ifTrue: [ self error: self creditCardExpirationError ].! !
+
+
+!CashierCart methodsFor: 'operations' stamp: 'FE 7/9/2020 21:23:32'!
 checkOutOf: aCart with: aCreditCard
 
 	| aSale |
@@ -450,21 +508,12 @@ checkOutOf: aCart with: aCreditCard
 	aCart clear.
 	! !
 
-!CashierCart methodsFor: 'as yet unclassified' stamp: 'FE 7/9/2020 19:58:55'!
-creditCardExpirationError
 
-	^ 'Cant checkout with expirated Credit Card.'! !
-
-!CashierCart methodsFor: 'as yet unclassified' stamp: 'FE 7/9/2020 20:09:16'!
+!CashierCart methodsFor: 'initialize' stamp: 'FE 7/9/2020 20:09:16'!
 initialize
 
 	super initialize.
 	sales := OrderedCollection new.! !
-
-!CashierCart methodsFor: 'as yet unclassified' stamp: 'FE 7/9/2020 20:10:46'!
-sales
-	
-	^ sales.! !
 
 
 !classDefinition: #CreditCard category: #TusLibros!
@@ -474,7 +523,18 @@ Object subclass: #CreditCard
 	poolDictionaries: ''
 	category: 'TusLibros'!
 
-!CreditCard methodsFor: 'as yet unclassified' stamp: 'FE 7/11/2020 16:07:47'!
+!CreditCard methodsFor: 'access' stamp: 'FE 7/11/2020 16:14:26'!
+isExpirated
+	
+	| expirationMonth expirationYear |
+	
+	expirationMonth := (expiration copyFrom: 1 to: 2) asInteger .
+	expirationYear := (expiration copyFrom: 3 to: 6) asInteger .
+		
+	^ (Date year: expirationYear month: expirationMonth day: 01) < Date today.! !
+
+
+!CreditCard methodsFor: 'validation' stamp: 'FE 7/11/2020 16:07:47'!
 assertIsValidExpirationDate: aExpirationDate
 
 	| expirationMonth |
@@ -487,25 +547,47 @@ assertIsValidExpirationDate: aExpirationDate
 	((expirationMonth >= 1) & (expirationMonth <= 12))
 		ifFalse: [ ^ self error: self invalidExpirationDateError ].! !
 
-!CreditCard methodsFor: 'as yet unclassified' stamp: 'FE 7/9/2020 20:04:44'!
+!CreditCard methodsFor: 'validation' stamp: 'FE 7/9/2020 20:04:44'!
 assertIsValidName: aName
 	
 	(aName allSatisfy: [:char | (char >= $A) & (char <= $z)] )
 		ifFalse: [ ^ self error: self invalidCardNameError ].! !
 
-!CreditCard methodsFor: 'as yet unclassified' stamp: 'FE 7/9/2020 20:05:18'!
+!CreditCard methodsFor: 'validation' stamp: 'FE 7/9/2020 20:05:18'!
 assertIsValidNumber: aNumber
 	
 	(aNumber size = 16 & (aNumber allSatisfy: [:char | (char >= $0) & (char <= $9)]) )
 		ifFalse: [ ^ self error: self invalidCardNumberError ].! !
 
-!CreditCard methodsFor: 'as yet unclassified' stamp: 'FE 7/9/2020 20:05:48'!
+!CreditCard methodsFor: 'validation' stamp: 'FE 7/9/2020 20:05:48'!
 assertIsValidSecurityCode: aCode
 	
 	(aCode size = 3 & (aCode allSatisfy: [:char | (char >= $0) & (char <= $9)]) )
 		ifFalse: [ ^ self error: self invalidSecurityCodeError ].! !
 
-!CreditCard methodsFor: 'as yet unclassified' stamp: 'FE 7/9/2020 19:40:06'!
+
+!CreditCard methodsFor: 'errors' stamp: 'FE 7/9/2020 20:04:44'!
+invalidCardNameError
+
+	^ 'Invalid card name.'! !
+
+!CreditCard methodsFor: 'errors' stamp: 'FE 7/9/2020 20:05:18'!
+invalidCardNumberError
+
+	^ 'Invalid card number.'! !
+
+!CreditCard methodsFor: 'errors' stamp: 'FE 7/9/2020 20:05:36'!
+invalidExpirationDateError
+
+	^ 'Invalid Expiration Date.'! !
+
+!CreditCard methodsFor: 'errors' stamp: 'FE 7/9/2020 20:05:48'!
+invalidSecurityCodeError
+
+	^ 'Invalid Security Code.'! !
+
+
+!CreditCard methodsFor: 'initialize' stamp: 'FE 7/9/2020 19:40:06'!
 initializeWithANumber: aNumber name: aName expiration: aDate andCode: aCode
 
 	self assertIsValidNumber: aNumber.
@@ -518,36 +600,6 @@ initializeWithANumber: aNumber name: aName expiration: aDate andCode: aCode
 	expiration := aDate.
 	code := aCode.! !
 
-!CreditCard methodsFor: 'as yet unclassified' stamp: 'FE 7/9/2020 20:04:44'!
-invalidCardNameError
-
-	^ 'Invalid card name.'! !
-
-!CreditCard methodsFor: 'as yet unclassified' stamp: 'FE 7/9/2020 20:05:18'!
-invalidCardNumberError
-
-	^ 'Invalid card number.'! !
-
-!CreditCard methodsFor: 'as yet unclassified' stamp: 'FE 7/9/2020 20:05:36'!
-invalidExpirationDateError
-
-	^ 'Invalid Expiration Date.'! !
-
-!CreditCard methodsFor: 'as yet unclassified' stamp: 'FE 7/9/2020 20:05:48'!
-invalidSecurityCodeError
-
-	^ 'Invalid Security Code.'! !
-
-!CreditCard methodsFor: 'as yet unclassified' stamp: 'FE 7/11/2020 16:14:26'!
-isExpirated
-	
-	| expirationMonth expirationYear |
-	
-	expirationMonth := (expiration copyFrom: 1 to: 2) asInteger .
-	expirationYear := (expiration copyFrom: 3 to: 6) asInteger .
-		
-	^ (Date year: expirationYear month: expirationMonth day: 01) < Date today.! !
-
 
 !classDefinition: #Sale category: #TusLibros!
 Object subclass: #Sale
@@ -556,9 +608,15 @@ Object subclass: #Sale
 	poolDictionaries: ''
 	category: 'TusLibros'!
 
-!Sale methodsFor: 'as yet unclassified' stamp: 'FE 7/11/2020 16:16:43'!
+!Sale methodsFor: 'initialize' stamp: 'SC 7/11/2020 16:40:05'!
 initializeWith: aCart
 
-	items := aCart items.
-	priceList := aCart priceList.
+	items := aCart items copy.
+	priceList := aCart priceList copy.
 	date := Date today.! !
+
+
+!Sale methodsFor: 'operations' stamp: 'SC 7/11/2020 16:35:18'!
+total
+
+	^ items sum: [ :item | priceList at: item] .! !
