@@ -300,7 +300,7 @@ test01CantCreateCardWithInvalidNumber
 
 	! !
 
-!CreditCardTest methodsFor: 'tests' stamp: 'SC 7/11/2020 16:56:40'!
+!CreditCardTest methodsFor: 'tests' stamp: 'FE 7/11/2020 20:47:28'!
 test02CantCreateCardWithInvalidName
 
 	| aCreditCard |
@@ -308,7 +308,7 @@ test02CantCreateCardWithInvalidName
 	aCreditCard  := CreditCard new.
 
 	self 
-		should: [aCreditCard initializeWithANumber: '1111222233334444' name: 'John 45' expiration: '042022' andCode: '312' ]
+		should: [aCreditCard initializeWithANumber: '1111222233334444' name: '' expiration: '042022' andCode: '312' ]
 		raise: Error - MessageNotUnderstood
 		withExceptionDo: [ :anError |
 			self assert: anError messageText = aCreditCard invalidCardNameError. ]
@@ -547,11 +547,11 @@ assertIsValidExpirationDate: aExpirationDate
 	((expirationMonth >= 1) & (expirationMonth <= 12))
 		ifFalse: [ ^ self error: self invalidExpirationDateError ].! !
 
-!CreditCard methodsFor: 'validation' stamp: 'FE 7/9/2020 20:04:44'!
+!CreditCard methodsFor: 'validation' stamp: 'FE 7/11/2020 20:47:11'!
 assertIsValidName: aName
 	
-	(aName allSatisfy: [:char | (char >= $A) & (char <= $z)] )
-		ifFalse: [ ^ self error: self invalidCardNameError ].! !
+	(aName isEmpty)
+		ifTrue: [ ^ self error: self invalidCardNameError ].! !
 
 !CreditCard methodsFor: 'validation' stamp: 'FE 7/9/2020 20:05:18'!
 assertIsValidNumber: aNumber
