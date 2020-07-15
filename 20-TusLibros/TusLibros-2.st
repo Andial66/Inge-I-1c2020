@@ -114,7 +114,6 @@ test10TotalOfACartEqualsTheSumOfAllItsItemsPrices
 	
 	self assert: (cart total = ((cart priceList at: StoreTestObjectsFactory itemSellByTheStore) * 2)). ! !
 
-
 
 !classDefinition: #CashierCartTest category: #TusLibros!
 TestCase subclass: #CashierCartTest
@@ -122,23 +121,6 @@ TestCase subclass: #CashierCartTest
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros'!
-
-!CashierCartTest methodsFor: 'support' stamp: 'FE 7/9/2020 19:48:41'!
-defaultPriceList
-	
-	| priceList |
-	
-	priceList := Dictionary new.
-	
-	priceList add: 'validBook' -> 200 .
-	
-	^ priceList
-	! !
-
-!CashierCartTest methodsFor: 'support' stamp: 'FE 7/9/2020 20:24:18'!
-itemSellByTheStore
-	
-	^ 'validBook'! !
 
 !CashierCartTest methodsFor: 'support' stamp: 'SC 7/14/2020 20:24:34'!
 setUp
@@ -367,7 +349,7 @@ test01CantCreateCardWithInvalidNumber
 
 	! !
 
-!CreditCardTest methodsFor: 'tests' stamp: 'FE 7/11/2020 20:47:28'!
+!CreditCardTest methodsFor: 'tests' stamp: 'FE 7/15/2020 20:39:49'!
 test02CantCreateCardWithInvalidName
 
 	| aCreditCard |
@@ -621,10 +603,10 @@ assertIsValidExpirationDate: aExpirationDate
 	((expirationMonth >= 1) & (expirationMonth <= 12))
 		ifFalse: [ ^ self error: self invalidExpirationDateError ].! !
 
-!CreditCard methodsFor: 'validation' stamp: 'FE 7/11/2020 20:47:11'!
+!CreditCard methodsFor: 'validation' stamp: 'FE 7/15/2020 20:38:20'!
 assertIsValidName: aName
 	
-	(aName isEmpty)
+	(aName isEmpty | (aName size > 30))
 		ifTrue: [ ^ self error: self invalidCardNameError ].! !
 
 !CreditCard methodsFor: 'validation' stamp: 'FE 7/9/2020 20:05:18'!
