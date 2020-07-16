@@ -63,14 +63,14 @@ test05CanNotAddMoreThanOneItemNotSellByTheStore
 			self assert: anError messageText = cart invalidItemErrorMessage.
 			self assert: cart isEmpty ]! !
 
-!CartTest methodsFor: 'tests' stamp: 'SC 7/14/2020 20:07:54'!
+!CartTest methodsFor: 'tests' stamp: 'SC 7/16/2020 12:27:00'!
 test06CartRemembersAddedItems
 
 	| cart |
 	
 	cart := StoreTestObjectsFactory createCart.
-	
 	cart add: StoreTestObjectsFactory itemSellByTheStore.
+	
 	self assert: (cart includes: StoreTestObjectsFactory itemSellByTheStore)! !
 
 !CartTest methodsFor: 'tests' stamp: 'SC 7/14/2020 20:08:01'!
@@ -82,14 +82,14 @@ test07CartDoesNotHoldNotAddedItems
 	
 	self deny: (cart includes: StoreTestObjectsFactory itemSellByTheStore)! !
 
-!CartTest methodsFor: 'tests' stamp: 'SC 7/14/2020 20:08:09'!
+!CartTest methodsFor: 'tests' stamp: 'SC 7/16/2020 12:27:17'!
 test08CartRemembersTheNumberOfAddedItems
 
 	| cart |
 	
 	cart := StoreTestObjectsFactory createCart.
-	
 	cart add: 2 of: StoreTestObjectsFactory itemSellByTheStore.
+	
 	self assert: (cart occurrencesOf: StoreTestObjectsFactory itemSellByTheStore) = 2! !
 
 !CartTest methodsFor: 'tests' stamp: 'SC 7/14/2020 20:08:18'!
@@ -141,13 +141,19 @@ setUp
 	                                              expiration:  aValidDateForCreditCard 
 	                                              andCode: '312'.! !
 
+!CashierCartTest methodsFor: 'support' stamp: 'SC 7/16/2020 12:15:44'!
+totalOf: aSalesList
 
-!CashierCartTest methodsFor: 'tests' stamp: 'SC 7/14/2020 20:16:15'!
+	^aSalesList sum: [ :aSale | aSale total] ifEmpty: [0] .! !
+
+
+!CashierCartTest methodsFor: 'tests' stamp: 'SC 7/16/2020 12:15:54'!
 test01CantCheckOutWithEmptyCart
 
-	| aCashier aCart |
+	| aCashier aCart salesList |
 	
-	aCashier := CashierCart new.
+	salesList := OrderedCollection new.
+	aCashier := CashierCart with: salesList.
 	aCart := StoreTestObjectsFactory createCart .
 	
 	
@@ -156,94 +162,92 @@ test01CantCheckOutWithEmptyCart
 		raise: Error - MessageNotUnderstood
 		withExceptionDo: [ :anError |
 			self assert: anError messageText = aCashier cartIsEmptyError. 
-			self assert: aCashier sales isEmpty ]
+			self assert: salesList isEmpty ]
 ! !
 
-!CashierCartTest methodsFor: 'tests' stamp: 'SC 7/14/2020 20:18:12'!
+!CashierCartTest methodsFor: 'tests' stamp: 'SC 7/16/2020 12:23:35'!
 test02CantCheckOutWithExpiratedCard
 
-	| aCashier aCart |
+	| aCashier aCart salesList |
 	
-	aCashier := CashierCart new.
-	aCart := StoreTestObjectsFactory createCart .
-	aCart add: StoreTestObjectsFactory itemSellByTheStore.
+	salesList := OrderedCollection new.
+	aCashier := CashierCart with: salesList.
+	aCart := StoreTestObjectsFactory createCartWithItem .
 	
 	self 
 		should: [ aCashier checkOutOf: aCart  with: expiratedCard debitingWith: positiveMerchantProcessor ]
 		raise: Error - MessageNotUnderstood
 		withExceptionDo: [ :anError |
 			self assert: anError messageText = aCashier creditCardExpirationError . 
-			self assert: aCashier sales isEmpty ]! !
+			self assert: salesList isEmpty ]! !
 
-!CashierCartTest methodsFor: 'tests' stamp: 'SC 7/14/2020 20:18:39'!
-test03CashierHasASaleAfterACartCheckOut
+!CashierCartTest methodsFor: 'tests' stamp: 'SC 7/16/2020 12:23:48'!
+test03CashierRegistersSaleAfterValidCheckOut
 
-	| aCashier aCart |
+	| aCashier aCart salesList |
 	
-	aCashier := CashierCart new.
-	aCart := StoreTestObjectsFactory createCart .
-	aCart add: StoreTestObjectsFactory itemSellByTheStore.
+	salesList := OrderedCollection new.
+	aCashier := CashierCart with: salesList.
+	aCart := StoreTestObjectsFactory createCartWithItem .
 	
 	aCashier checkOutOf: aCart with: aValidCard debitingWith: positiveMerchantProcessor .
 	
-	self deny: aCashier sales isEmpty.! !
+	self deny: salesList isEmpty.! !
 
-!CashierCartTest methodsFor: 'tests' stamp: 'SC 7/14/2020 20:18:51'!
+!CashierCartTest methodsFor: 'tests' stamp: 'SC 7/16/2020 12:23:58'!
 test04CartsAreEmptyAfterCheckOut
 
-	| aCashier aCart |
+	| aCashier aCart salesList |
 	
-	aCashier := CashierCart new.
-	aCart := StoreTestObjectsFactory createCart .
-	aCart add: StoreTestObjectsFactory itemSellByTheStore.
+	salesList := OrderedCollection new.
+	aCashier := CashierCart with: salesList.
+	aCart := StoreTestObjectsFactory createCartWithItem .
 	
 	aCashier checkOutOf: aCart with: aValidCard debitingWith: positiveMerchantProcessor . 
 	
 	self assert: aCart isEmpty .! !
 
-!CashierCartTest methodsFor: 'tests' stamp: 'SC 7/14/2020 20:19:00'!
-test05CashierRemembersASale
+!CashierCartTest methodsFor: 'tests' stamp: 'SC 7/16/2020 12:24:04'!
+test05TotalOfASaleIsRegisteredAfterACheckOut
 
-	| aCashier aCart cartTotal |
+	| aCashier aCart cartTotal salesList |
 	
-	aCashier := CashierCart new.
-	aCart := StoreTestObjectsFactory createCart .
-	aCart add: StoreTestObjectsFactory itemSellByTheStore.
+	salesList := OrderedCollection new.
+	aCashier := CashierCart with: salesList.
+	aCart := StoreTestObjectsFactory createCartWithItem .
 	
 	cartTotal := aCart total .
 	
 	aCashier checkOutOf: aCart with: aValidCard debitingWith: positiveMerchantProcessor . 
 	
-	self assert: aCashier salesTotal = cartTotal .! !
+	self assert: (self totalOf: salesList) = cartTotal .! !
 
-!CashierCartTest methodsFor: 'tests' stamp: 'SC 7/14/2020 20:19:21'!
-test06CashierRemembersTwoSales
+!CashierCartTest methodsFor: 'tests' stamp: 'SC 7/16/2020 12:24:17'!
+test06TwoSalesAreRegisteredAfterTwoCheckOuts
 
-	| aCashier aCart anotherCart salesTotal |
+	| aCashier aCart anotherCart salesTotal salesList |
 	
-	aCashier := CashierCart new.
+	salesList := OrderedCollection new.
+	aCashier := CashierCart with: salesList.
 	
-	aCart := StoreTestObjectsFactory createCart .
-	anotherCart := StoreTestObjectsFactory createCart .
-	
-	aCart add: StoreTestObjectsFactory itemSellByTheStore.
-	anotherCart add: StoreTestObjectsFactory itemSellByTheStore.
+	aCart := StoreTestObjectsFactory createCartWithItem .
+	anotherCart := StoreTestObjectsFactory createCartWithItem .
 	
 	salesTotal := aCart total + anotherCart total.
 	
 	aCashier checkOutOf: aCart with: aValidCard debitingWith: positiveMerchantProcessor . 
 	aCashier checkOutOf: anotherCart with: aValidCard debitingWith: positiveMerchantProcessor .
 	
-	self assert: aCashier salesTotal = salesTotal .! !
+	self assert: (self totalOf: salesList) = salesTotal .! !
 
-!CashierCartTest methodsFor: 'tests' stamp: 'SC 7/14/2020 20:26:20'!
+!CashierCartTest methodsFor: 'tests' stamp: 'SC 7/16/2020 12:24:46'!
 test07CantDebitFromAStolenCard
 
-	| aCart aCashier merchantProcessor aDebitBehaviour|
+	| aCart aCashier merchantProcessor aDebitBehaviour salesList |
 	
-	aCashier := CashierCart new .
-	aCart := StoreTestObjectsFactory createCart .
-	aCart add: StoreTestObjectsFactory itemSellByTheStore.
+	salesList := OrderedCollection new.
+	aCashier := CashierCart with: salesList.
+	aCart := StoreTestObjectsFactory createCartWithItem .
 	
 	aDebitBehaviour := [ :anAmmount :aCC | self error: 'Stolen Card'] .
 	merchantProcessor := MerchantProcessorSimmulator with: aDebitBehaviour .
@@ -255,17 +259,17 @@ test07CantDebitFromAStolenCard
 		 withExceptionDo:  [ :anError |
 			self assert: anError messageText = 'Stolen Card' .
 			self deny: aCart isEmpty . 
-			self assert: aCashier salesTotal = 0] .
+			self assert: (self totalOf: salesList) = 0] .
 			! !
 
-!CashierCartTest methodsFor: 'tests' stamp: 'SC 7/14/2020 20:26:32'!
+!CashierCartTest methodsFor: 'tests' stamp: 'SC 7/16/2020 12:24:53'!
 test08CantDebitFromACardWithNotEnoughFunds
 
-	| aCart aCashier merchantProcessor aDebitBehaviour|
+	| aCart aCashier merchantProcessor aDebitBehaviour salesList |
 	
-	aCashier := CashierCart new .
-	aCart := StoreTestObjectsFactory createCart .
-	aCart add: StoreTestObjectsFactory itemSellByTheStore.
+	salesList := OrderedCollection new.
+	aCashier := CashierCart with: salesList.
+	aCart := StoreTestObjectsFactory createCartWithItem .
 	
 	aDebitBehaviour := [ :anAmmount :aCC | self error: 'Not enough funds'] .
 	merchantProcessor := MerchantProcessorSimmulator with: aDebitBehaviour .
@@ -277,17 +281,17 @@ test08CantDebitFromACardWithNotEnoughFunds
 		 withExceptionDo:  [ :anError |
 			self assert: anError messageText = 'Not enough funds' .
 			self deny: aCart isEmpty . 
-			self assert: aCashier salesTotal = 0] .
+			self assert: (self totalOf: salesList) = 0] .
 			! !
 
-!CashierCartTest methodsFor: 'tests' stamp: 'SC 7/14/2020 20:26:45'!
+!CashierCartTest methodsFor: 'tests' stamp: 'SC 7/16/2020 12:25:07'!
 test09CanDebitWhenCardIsValid
 
-	| aCart aCashier merchantProcessor aDebitBehaviour aCartTotal |
+	| aCart aCashier merchantProcessor aDebitBehaviour aCartTotal salesList |
 	
-	aCashier := CashierCart new .
-	aCart := StoreTestObjectsFactory createCart .
-	aCart add: StoreTestObjectsFactory itemSellByTheStore.
+	salesList := OrderedCollection new.
+	aCashier := CashierCart with: salesList.
+	aCart := StoreTestObjectsFactory createCartWithItem .
 	
 	aCartTotal := aCart total .
 	
@@ -299,16 +303,16 @@ test09CanDebitWhenCardIsValid
 			   debitingWith: merchantProcessor  .
 		
 	self assert: aCart isEmpty . 
-	self assert: aCashier salesTotal = aCartTotal .! !
+	self assert: (self totalOf: salesList) = aCartTotal .! !
 
-!CashierCartTest methodsFor: 'tests' stamp: 'SC 7/14/2020 20:29:23'!
+!CashierCartTest methodsFor: 'tests' stamp: 'SC 7/16/2020 12:25:32'!
 test10CashierDoesntComunicateWithMerchantProccessorIfCardIsExpired
 
-	| aCart aCashier merchantProcessor aDebitBehaviour |
+	| aCart aCashier merchantProcessor aDebitBehaviour salesList |
 	
-	aCashier := CashierCart new .
-	aCart := StoreTestObjectsFactory createCart .
-	aCart add: StoreTestObjectsFactory itemSellByTheStore.
+	salesList := OrderedCollection new.
+	aCashier := CashierCart with: salesList.
+	aCart := StoreTestObjectsFactory createCartWithItem .
 	
 	aDebitBehaviour := [ :anAmmount :aCC | self error: 'Merchant Processor was accessed'] .
 	merchantProcessor := MerchantProcessorSimmulator with: aDebitBehaviour .
@@ -320,7 +324,33 @@ test10CashierDoesntComunicateWithMerchantProccessorIfCardIsExpired
 		withExceptionDo: [ :anError |
 			self assert: anError messageText = CashierCart new creditCardExpirationError .
 			self deny: aCart isEmpty .
-			self assert: aCashier salesTotal = 0 .]
+			self assert: (self totalOf: salesList) = 0 .]
+! !
+
+!CashierCartTest methodsFor: 'tests' stamp: 'SC 7/16/2020 12:26:12'!
+test11MultipleCashiersCanWriteSalesSimoutaneouslyInTheSalesList
+
+	| aCart aCashier salesList anotherCashier anotherCart salesTotal |
+	
+	salesList := OrderedCollection new.
+	aCashier := CashierCart with: salesList.
+	anotherCashier := CashierCart with: salesList.
+	aCart := StoreTestObjectsFactory createCartWithItem .
+	anotherCart := StoreTestObjectsFactory createCartWithItem . 
+	
+	salesTotal := aCart total  + anotherCart total .
+	
+	aCashier checkOutOf: aCart 
+		        with: aValidCard
+			   debitingWith: positiveMerchantProcessor .
+			
+	anotherCashier checkOutOf: anotherCart 
+		                  with: aValidCard
+			             debitingWith: positiveMerchantProcessor .
+	
+	self assert: salesTotal = (self totalOf: salesList).
+			
+		
 ! !
 
 
@@ -349,7 +379,7 @@ test01CantCreateCardWithInvalidNumber
 
 	! !
 
-!CreditCardTest methodsFor: 'tests' stamp: 'FE 7/15/2020 20:39:49'!
+!CreditCardTest methodsFor: 'tests' stamp: 'FE 7/11/2020 20:47:28'!
 test02CantCreateCardWithInvalidName
 
 	| aCreditCard |
@@ -510,17 +540,6 @@ Object subclass: #CashierCart
 	poolDictionaries: ''
 	category: 'TusLibros'!
 
-!CashierCart methodsFor: 'sales' stamp: 'FE 7/9/2020 20:10:46'!
-sales
-	
-	^ sales.! !
-
-!CashierCart methodsFor: 'sales' stamp: 'SC 7/14/2020 19:49:54'!
-salesTotal
-	
-	^ sales sum: [ :sale | sale total] ifEmpty: [0].! !
-
-
 !CashierCart methodsFor: 'errors' stamp: 'FE 7/9/2020 19:58:44'!
 cartIsEmptyError
 
@@ -543,7 +562,7 @@ assertIsValidCreditCard: aCreditCard
 	(aCreditCard isExpiratedBy: Date today) ifTrue: [ self error: self creditCardExpirationError ].! !
 
 
-!CashierCart methodsFor: 'operations' stamp: 'SC 7/14/2020 19:32:08'!
+!CashierCart methodsFor: 'operations' stamp: 'SC 7/16/2020 12:28:48'!
 checkOutOf: aCart with: aCreditCard debitingWith: aMerchantProcessor
 
 	| aSale |
@@ -553,18 +572,28 @@ checkOutOf: aCart with: aCreditCard debitingWith: aMerchantProcessor
 	
 	aMerchantProcessor debit: aCart total from: aCreditCard .
 	
-	aSale := Sale new initializeWith: aCart.
+	aSale := Sale of: aCart.
 	
 	sales add: aSale.
 	aCart clear.
 	! !
 
 
-!CashierCart methodsFor: 'initialize' stamp: 'FE 7/9/2020 20:09:16'!
-initialize
+!CashierCart methodsFor: 'initialize' stamp: 'SC 7/16/2020 12:04:04'!
+with: aSalesList
 
-	super initialize.
-	sales := OrderedCollection new.! !
+	sales := aSalesList .! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'CashierCart class' category: #TusLibros!
+CashierCart class
+	instanceVariableNames: ''!
+
+!CashierCart class methodsFor: 'initialize' stamp: 'SC 7/16/2020 12:07:11'!
+with: aSalesList
+
+	^self new with: aSalesList .! !
 
 
 !classDefinition: #CreditCard category: #TusLibros!
@@ -603,10 +632,10 @@ assertIsValidExpirationDate: aExpirationDate
 	((expirationMonth >= 1) & (expirationMonth <= 12))
 		ifFalse: [ ^ self error: self invalidExpirationDateError ].! !
 
-!CreditCard methodsFor: 'validation' stamp: 'FE 7/15/2020 20:38:20'!
+!CreditCard methodsFor: 'validation' stamp: 'FE 7/11/2020 20:47:11'!
 assertIsValidName: aName
 	
-	(aName isEmpty | (aName size > 30))
+	(aName isEmpty)
 		ifTrue: [ ^ self error: self invalidCardNameError ].! !
 
 !CreditCard methodsFor: 'validation' stamp: 'FE 7/9/2020 20:05:18'!
@@ -718,6 +747,17 @@ total
 
 	^ items sum: [ :item | priceList at: item] .! !
 
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'Sale class' category: #TusLibros!
+Sale class
+	instanceVariableNames: ''!
+
+!Sale class methodsFor: 'as yet unclassified' stamp: 'SC 7/16/2020 12:29:09'!
+of: aCart
+
+	^Sale new initializeWith: aCart .! !
+
 
 !classDefinition: #StoreTestObjectsFactory category: #TusLibros!
 Object subclass: #StoreTestObjectsFactory
@@ -736,6 +776,14 @@ StoreTestObjectsFactory class
 createCart
 	
 	^Cart acceptingItemsOf: self defaultPriceList! !
+
+!StoreTestObjectsFactory class methodsFor: 'support' stamp: 'SC 7/16/2020 12:23:04'!
+createCartWithItem
+	
+	| aCart |
+	
+	aCart := Cart acceptingItemsOf: self defaultPriceList .
+	^aCart add: self itemSellByTheStore.! !
 
 !StoreTestObjectsFactory class methodsFor: 'support' stamp: 'SC 7/14/2020 20:05:02'!
 defaultPriceList
