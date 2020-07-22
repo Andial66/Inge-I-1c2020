@@ -5,20 +5,21 @@ TestCase subclass: #CartSession
 	poolDictionaries: ''
 	category: 'TusLibros'!
 
-!CartSession methodsFor: 'operations' stamp: 'SC 7/21/2020 21:19:26'!
+!CartSession methodsFor: 'access' stamp: 'SC 7/21/2020 21:19:26'!
 isValid
 
 	^(clock now - lastActivity) minutes < 30 .  ! !
 
-!CartSession methodsFor: 'operations' stamp: 'SC 7/21/2020 21:19:53'!
-updateTime
-
-	lastActivity _ clock now.! !
-
-!CartSession methodsFor: 'operations' stamp: 'SC 7/21/2020 20:45:05'!
+!CartSession methodsFor: 'access' stamp: 'SC 7/21/2020 20:45:05'!
 username
 
 	^username  .! !
+
+
+!CartSession methodsFor: 'update' stamp: 'SC 7/21/2020 21:19:53'!
+updateTime
+
+	lastActivity _ clock now.! !
 
 
 !CartSession methodsFor: 'initialize' stamp: 'SC 7/21/2020 21:18:57'!
@@ -35,12 +36,7 @@ with: aUsername and: aClock
 CartSession class
 	instanceVariableNames: ''!
 
-!CartSession class methodsFor: 'as yet unclassified' stamp: 'SC 7/21/2020 20:38:30'!
-from: aUsername
-
-	^self new with: aUsername.! !
-
-!CartSession class methodsFor: 'as yet unclassified' stamp: 'SC 7/21/2020 21:17:52'!
+!CartSession class methodsFor: 'instance creation' stamp: 'SC 7/21/2020 21:17:52'!
 from: aUsername with: aClock
 
 	^self new with: aUsername and: aClock.! !
@@ -165,29 +161,27 @@ test10TotalOfACartEqualsTheSumOfAllItsItemsPrices
 
 !classDefinition: #CashierCartTest category: #TusLibros!
 TestCase subclass: #CashierCartTest
-	instanceVariableNames: 'positiveMerchantProcessor expiratedCard aValidCard'
+	instanceVariableNames: 'aPositiveMerchantProcessor anExpiredCard aValidCard username'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros'!
 
-!CashierCartTest methodsFor: 'support' stamp: 'SC 7/21/2020 22:47:14'!
+!CashierCartTest methodsFor: 'support' stamp: 'SC 7/22/2020 12:53:37'!
 setUp
 
-	| aValidDateForCreditCard |
+	aPositiveMerchantProcessor := MerchantProcessorSimmulator with: [ :anAmmount :aCC | 'OK'] .
 	
-	aValidDateForCreditCard := StoreTestObjectsFactory validCreditCardDate .
-
-	positiveMerchantProcessor := MerchantProcessorSimmulator with: [ :anAmmoun :aCC | 'OK'] .
-	
-	expiratedCard := CreditCard new initializeWithANumber: '1234567812345678' 
+	anExpiredCard := CreditCard new initializeWithANumber: '1234567812345678' 
 	                                                     name: 'John' 
 	                                                     expiration: StoreTestObjectsFactory expiredCreditCardDate 
 	                                                     andCode: '312'.
 	
 	aValidCard := CreditCard new initializeWithANumber: '1234567812345678' 
 	                                              name: 'John'  
-	                                              expiration:  aValidDateForCreditCard
-	                                              andCode: '312'.! !
+	                                              expiration:  StoreTestObjectsFactory validCreditCardDate 
+	                                              andCode: '312'.
+	
+	username := StoreTestObjectsFactory validUser .! !
 
 !CashierCartTest methodsFor: 'support' stamp: 'SC 7/16/2020 12:15:44'!
 totalOf: aSalesList
@@ -195,7 +189,7 @@ totalOf: aSalesList
 	^aSalesList sum: [ :aSale | aSale total] ifEmpty: [0] .! !
 
 
-!CashierCartTest methodsFor: 'tests' stamp: 'SC 7/16/2020 12:15:54'!
+!CashierCartTest methodsFor: 'tests' stamp: 'SC 7/22/2020 12:53:37'!
 test01CantCheckOutWithEmptyCart
 
 	| aCashier aCart salesList |
@@ -206,15 +200,18 @@ test01CantCheckOutWithEmptyCart
 	
 	
 	self 
-		should: [ aCashier checkOutOf: aCart  with: aValidCard debitingWith: positiveMerchantProcessor ]
+		should: [ aCashier checkOutOf: aCart  
+			                      with: aValidCard 
+			                      debitingWith: aPositiveMerchantProcessor
+			                      from: username ]
 		raise: Error - MessageNotUnderstood
 		withExceptionDo: [ :anError |
 			self assert: anError messageText = aCashier cartIsEmptyError. 
 			self assert: salesList isEmpty ]
 ! !
 
-!CashierCartTest methodsFor: 'tests' stamp: 'SC 7/16/2020 12:23:35'!
-test02CantCheckOutWithExpiratedCard
+!CashierCartTest methodsFor: 'tests' stamp: 'SC 7/22/2020 12:53:36'!
+test02CantCheckOutWithExpiredCard
 
 	| aCashier aCart salesList |
 	
@@ -223,13 +220,16 @@ test02CantCheckOutWithExpiratedCard
 	aCart := StoreTestObjectsFactory createCartWithItem .
 	
 	self 
-		should: [ aCashier checkOutOf: aCart  with: expiratedCard debitingWith: positiveMerchantProcessor ]
+		should: [ aCashier checkOutOf: aCart  
+			                     with: anExpiredCard 
+			                     debitingWith: aPositiveMerchantProcessor
+			                     from: username ]
 		raise: Error - MessageNotUnderstood
 		withExceptionDo: [ :anError |
 			self assert: anError messageText = aCashier creditCardExpirationError . 
 			self assert: salesList isEmpty ]! !
 
-!CashierCartTest methodsFor: 'tests' stamp: 'SC 7/16/2020 12:23:48'!
+!CashierCartTest methodsFor: 'tests' stamp: 'SC 7/22/2020 12:53:37'!
 test03CashierRegistersSaleAfterValidCheckOut
 
 	| aCashier aCart salesList |
@@ -238,11 +238,14 @@ test03CashierRegistersSaleAfterValidCheckOut
 	aCashier := CashierCart with: salesList.
 	aCart := StoreTestObjectsFactory createCartWithItem .
 	
-	aCashier checkOutOf: aCart with: aValidCard debitingWith: positiveMerchantProcessor .
+	aCashier checkOutOf: aCart 
+	              with: aValidCard 
+	              debitingWith: aPositiveMerchantProcessor
+	              from: username .
 	
 	self deny: salesList isEmpty.! !
 
-!CashierCartTest methodsFor: 'tests' stamp: 'SC 7/16/2020 12:23:58'!
+!CashierCartTest methodsFor: 'tests' stamp: 'SC 7/22/2020 12:53:37'!
 test04CartsAreEmptyAfterCheckOut
 
 	| aCashier aCart salesList |
@@ -251,11 +254,14 @@ test04CartsAreEmptyAfterCheckOut
 	aCashier := CashierCart with: salesList.
 	aCart := StoreTestObjectsFactory createCartWithItem .
 	
-	aCashier checkOutOf: aCart with: aValidCard debitingWith: positiveMerchantProcessor . 
+	aCashier checkOutOf: aCart 
+	              with: aValidCard 
+	              debitingWith: aPositiveMerchantProcessor
+	              from: username . 
 	
 	self assert: aCart isEmpty .! !
 
-!CashierCartTest methodsFor: 'tests' stamp: 'SC 7/16/2020 12:24:04'!
+!CashierCartTest methodsFor: 'tests' stamp: 'SC 7/22/2020 12:53:36'!
 test05TotalOfASaleIsRegisteredAfterACheckOut
 
 	| aCashier aCart cartTotal salesList |
@@ -266,11 +272,14 @@ test05TotalOfASaleIsRegisteredAfterACheckOut
 	
 	cartTotal := aCart total .
 	
-	aCashier checkOutOf: aCart with: aValidCard debitingWith: positiveMerchantProcessor . 
+	aCashier checkOutOf: aCart 
+	              with: aValidCard 
+	              debitingWith: aPositiveMerchantProcessor
+	              from: username . 
 	
 	self assert: (self totalOf: salesList) = cartTotal .! !
 
-!CashierCartTest methodsFor: 'tests' stamp: 'SC 7/16/2020 12:24:17'!
+!CashierCartTest methodsFor: 'tests' stamp: 'SC 7/22/2020 12:53:36'!
 test06TwoSalesAreRegisteredAfterTwoCheckOuts
 
 	| aCashier aCart anotherCart salesTotal salesList |
@@ -283,12 +292,19 @@ test06TwoSalesAreRegisteredAfterTwoCheckOuts
 	
 	salesTotal := aCart total + anotherCart total.
 	
-	aCashier checkOutOf: aCart with: aValidCard debitingWith: positiveMerchantProcessor . 
-	aCashier checkOutOf: anotherCart with: aValidCard debitingWith: positiveMerchantProcessor .
+	aCashier checkOutOf: aCart 
+	              with: aValidCard 
+	              debitingWith: aPositiveMerchantProcessor 
+	              from: username .
+	 
+	aCashier checkOutOf: anotherCart  
+	              with: aValidCard 
+	              debitingWith: aPositiveMerchantProcessor 
+	              from: username .
 	
 	self assert: (self totalOf: salesList) = salesTotal .! !
 
-!CashierCartTest methodsFor: 'tests' stamp: 'SC 7/16/2020 12:24:46'!
+!CashierCartTest methodsFor: 'tests' stamp: 'SC 7/22/2020 12:03:00'!
 test07CantDebitFromAStolenCard
 
 	| aCart aCashier merchantProcessor aDebitBehaviour salesList |
@@ -302,7 +318,8 @@ test07CantDebitFromAStolenCard
 	
 	self should: [ aCashier checkOutOf: aCart 
 							 with: aValidCard
-						       debitingWith: merchantProcessor ]
+						       debitingWith: merchantProcessor
+						       from: username ]
 		 raise: Error - MessageNotUnderstood 
 		 withExceptionDo:  [ :anError |
 			self assert: anError messageText = 'Stolen Card' .
@@ -310,7 +327,7 @@ test07CantDebitFromAStolenCard
 			self assert: (self totalOf: salesList) = 0] .
 			! !
 
-!CashierCartTest methodsFor: 'tests' stamp: 'SC 7/16/2020 12:24:53'!
+!CashierCartTest methodsFor: 'tests' stamp: 'SC 7/22/2020 12:03:08'!
 test08CantDebitFromACardWithNotEnoughFunds
 
 	| aCart aCashier merchantProcessor aDebitBehaviour salesList |
@@ -324,7 +341,8 @@ test08CantDebitFromACardWithNotEnoughFunds
 	
 	self should: [ aCashier checkOutOf: aCart 
 							 with: aValidCard
-						       debitingWith: merchantProcessor ]
+						       debitingWith: merchantProcessor
+						       from: username  ]
 		 raise: Error - MessageNotUnderstood 
 		 withExceptionDo:  [ :anError |
 			self assert: anError messageText = 'Not enough funds' .
@@ -332,7 +350,7 @@ test08CantDebitFromACardWithNotEnoughFunds
 			self assert: (self totalOf: salesList) = 0] .
 			! !
 
-!CashierCartTest methodsFor: 'tests' stamp: 'SC 7/16/2020 12:25:07'!
+!CashierCartTest methodsFor: 'tests' stamp: 'SC 7/22/2020 12:03:16'!
 test09CanDebitWhenCardIsValid
 
 	| aCart aCashier merchantProcessor aDebitBehaviour aCartTotal salesList |
@@ -348,12 +366,13 @@ test09CanDebitWhenCardIsValid
 	
 	aCashier checkOutOf: aCart 
 		        with: aValidCard
-			   debitingWith: merchantProcessor  .
+			   debitingWith: merchantProcessor
+			   from: username  .
 		
 	self assert: aCart isEmpty . 
 	self assert: (self totalOf: salesList) = aCartTotal .! !
 
-!CashierCartTest methodsFor: 'tests' stamp: 'SC 7/16/2020 12:25:32'!
+!CashierCartTest methodsFor: 'tests' stamp: 'SC 7/22/2020 12:52:04'!
 test10CashierDoesntComunicateWithMerchantProccessorIfCardIsExpired
 
 	| aCart aCashier merchantProcessor aDebitBehaviour salesList |
@@ -366,8 +385,9 @@ test10CashierDoesntComunicateWithMerchantProccessorIfCardIsExpired
 	merchantProcessor := MerchantProcessorSimmulator with: aDebitBehaviour .
 	
 	self should: [ aCashier checkOutOf: aCart 
-		        		      with: expiratedCard 
-			   		      debitingWith: merchantProcessor  ]
+		        		      with: anExpiredCard 
+			   		      debitingWith: merchantProcessor
+					           from: username ]
 		raise: Error - MessageNotUnderstood
 		withExceptionDo: [ :anError |
 			self assert: anError messageText = CashierCart new creditCardExpirationError .
@@ -375,7 +395,7 @@ test10CashierDoesntComunicateWithMerchantProccessorIfCardIsExpired
 			self assert: (self totalOf: salesList) = 0 .]
 ! !
 
-!CashierCartTest methodsFor: 'tests' stamp: 'SC 7/16/2020 12:26:12'!
+!CashierCartTest methodsFor: 'tests' stamp: 'SC 7/22/2020 12:53:36'!
 test11MultipleCashiersCanWriteSalesSimoutaneouslyInTheSalesList
 
 	| aCart aCashier salesList anotherCashier anotherCart salesTotal |
@@ -390,11 +410,13 @@ test11MultipleCashiersCanWriteSalesSimoutaneouslyInTheSalesList
 	
 	aCashier checkOutOf: aCart 
 		        with: aValidCard
-			   debitingWith: positiveMerchantProcessor .
+			   debitingWith: aPositiveMerchantProcessor
+			   from: username .
 			
 	anotherCashier checkOutOf: anotherCart 
 		                  with: aValidCard
-			             debitingWith: positiveMerchantProcessor .
+			             debitingWith: aPositiveMerchantProcessor
+					  from: username .
 	
 	self assert: salesTotal = (self totalOf: salesList).
 			
@@ -487,41 +509,42 @@ test04CantCreateCardWithInvalidSecurityNumber
 
 !classDefinition: #InterfaceFacadeTest category: #TusLibros!
 TestCase subclass: #InterfaceFacadeTest
-	instanceVariableNames: 'aValidUser aValidPassword anotherValidUser anotherValidPassword clock positiveMerchantProcessor priceList salesList aBook'
+	instanceVariableNames: 'aValidUser aValidPassword anotherValidUser anotherValidPassword clock positiveMerchantProcessor aPriceList aSalesList aBook anInvalidUser anInvalidPassword aValidCreditCardDate anInvalidCreditCardDate aValidCardNumber aValidCardOwner aValidCode'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros'!
 
-!InterfaceFacadeTest methodsFor: 'addToCart' stamp: 'SC 7/21/2020 22:00:43'!
+!InterfaceFacadeTest methodsFor: 'addToCart' stamp: 'SC 7/22/2020 12:17:00'!
 test06CanAddElementsToAValidCartId
 
 	| aCartId anInterfaceFacade |
 	
 	anInterfaceFacade := InterfaceFacade debitingWith: positiveMerchantProcessor 
-	                                                             acceptingItemsFrom: priceList 
-	                                                             registeringOn: salesList 
+	                                                             acceptingItemsFrom: aPriceList 
+	                                                             registeringOn: aSalesList 
 	                                                             measuringTimeWith: clock.
-	aCartId := anInterfaceFacade createCart: aValidUser with: aValidPassword .
 	
-	anInterfaceFacade add: 1 of: StoreTestObjectsFactory itemSellByTheStore intoCartWith: aCartId. 
+	aCartId := anInterfaceFacade createCartFrom: aValidUser with: aValidPassword .
+	
+	anInterfaceFacade add: 1 of: aBook intoCartWithId: aCartId. 
 	
 	self assert: (anInterfaceFacade listCart: aCartId) size = 1.
-	self assert: (anInterfaceFacade listCart: aCartId) includes: StoreTestObjectsFactory itemSellByTheStore. 
+	self assert: (anInterfaceFacade listCart: aCartId) includes: aBook. 
 	
 	! !
 
-!InterfaceFacadeTest methodsFor: 'addToCart' stamp: 'SC 7/21/2020 22:00:51'!
+!InterfaceFacadeTest methodsFor: 'addToCart' stamp: 'SC 7/22/2020 12:14:36'!
 test07CantAddAnElementToAnInvalidCartId
 		
 	| anInterfaceFacade |
 	
 	anInterfaceFacade := InterfaceFacade debitingWith: positiveMerchantProcessor 
-	                                                             acceptingItemsFrom: priceList 
-	                                                             registeringOn: salesList 
+	                                                             acceptingItemsFrom: aPriceList 
+	                                                             registeringOn: aSalesList 
 	                                                             measuringTimeWith: clock.
 		
 	self 
-		should: [ anInterfaceFacade add: 1 of: (StoreTestObjectsFactory itemSellByTheStore) intoCartWith: '']
+		should: [ anInterfaceFacade add: 1 of: aBook intoCartWithId: '']
 		raise: Error - MessageNotUnderstood
 		withExceptionDo: [ :anError |
 			self assert: anError messageText = 'Invalid Cart Id' ]
@@ -529,14 +552,14 @@ test07CantAddAnElementToAnInvalidCartId
 	! !
 
 
-!InterfaceFacadeTest methodsFor: 'listCart' stamp: 'SC 7/21/2020 22:00:31'!
+!InterfaceFacadeTest methodsFor: 'listCart' stamp: 'SC 7/22/2020 12:11:49'!
 test05CantListACartWithInvalidId
 	
 	| anInterfaceFacade |
 	
 	anInterfaceFacade := InterfaceFacade debitingWith: positiveMerchantProcessor 
-	                                                             acceptingItemsFrom: priceList 
-	                                                             registeringOn: salesList 
+	                                                             acceptingItemsFrom: aPriceList 
+	                                                             registeringOn: aSalesList 
 	                                                             measuringTimeWith: clock.
 	
 	self 
@@ -547,16 +570,17 @@ test05CantListACartWithInvalidId
 	
 	! !
 
-!InterfaceFacadeTest methodsFor: 'listCart' stamp: 'SC 7/21/2020 22:03:59'!
+!InterfaceFacadeTest methodsFor: 'listCart' stamp: 'SC 7/22/2020 12:35:29'!
 test19ListingACartWithoutItemsReturnsAnEmptyList
 
 	| aCartId anInterfaceFacade |
 	
 	anInterfaceFacade := InterfaceFacade debitingWith: positiveMerchantProcessor 
-	                                                             acceptingItemsFrom: priceList 
-	                                                             registeringOn: salesList 
+	                                                             acceptingItemsFrom: aPriceList 
+	                                                             registeringOn: aSalesList 
 	                                                             measuringTimeWith: clock.
-	aCartId := anInterfaceFacade createCart: aValidUser with: aValidPassword .
+	
+	aCartId := anInterfaceFacade createCartFrom: aValidUser with: aValidPassword .
 	
 	self assert: (anInterfaceFacade listCart: aCartId) isEmpty .
 
@@ -564,38 +588,40 @@ test19ListingACartWithoutItemsReturnsAnEmptyList
 	
 	! !
 
-!InterfaceFacadeTest methodsFor: 'listCart' stamp: 'SC 7/21/2020 22:04:07'!
+!InterfaceFacadeTest methodsFor: 'listCart' stamp: 'SC 7/22/2020 12:36:07'!
 test20ListingACartWithItemsReturnsHisItems
 
 	| aCartId anInterfaceFacade |
 	
 	anInterfaceFacade := InterfaceFacade debitingWith: positiveMerchantProcessor 
-	                                                             acceptingItemsFrom: priceList 
-	                                                             registeringOn: salesList 
+	                                                             acceptingItemsFrom: aPriceList 
+	                                                             registeringOn: aSalesList 
 	                                                             measuringTimeWith: clock.
-	aCartId := anInterfaceFacade createCart: aValidUser with: aValidPassword .
 	
-	anInterfaceFacade add: 1 of: StoreTestObjectsFactory itemSellByTheStore intoCartWith: aCartId. 
+	aCartId := anInterfaceFacade createCartFrom: aValidUser with: aValidPassword .
+	
+	anInterfaceFacade add: 1 of: aBook intoCartWithId: aCartId. 
 	
 	self assert: (anInterfaceFacade listCart: aCartId) size = 1 .
-	self assert: ((anInterfaceFacade listCart: aCartId) includes: StoreTestObjectsFactory itemSellByTheStore). 
+	self assert: ((anInterfaceFacade listCart: aCartId) includes: aBook). 
 
 	
 	
 	! !
 
-!InterfaceFacadeTest methodsFor: 'listCart' stamp: 'SC 7/21/2020 22:04:14'!
+!InterfaceFacadeTest methodsFor: 'listCart' stamp: 'SC 7/22/2020 12:36:21'!
 test21ListingACartWithMoreThanOneItemReturnsAllHisItems
 
 	| aCartId anInterfaceFacade |
 	
 	anInterfaceFacade := InterfaceFacade debitingWith: positiveMerchantProcessor 
-	                                                             acceptingItemsFrom: priceList 
-	                                                             registeringOn: salesList 
+	                                                             acceptingItemsFrom: aPriceList 
+	                                                             registeringOn: aSalesList 
 	                                                             measuringTimeWith: clock.
-	aCartId := anInterfaceFacade createCart: aValidUser with: aValidPassword .
 	
-	anInterfaceFacade add: 5 of: StoreTestObjectsFactory itemSellByTheStore intoCartWith: aCartId. 
+	aCartId := anInterfaceFacade createCartFrom: aValidUser with: aValidPassword .
+	
+	anInterfaceFacade add: 5 of: aBook intoCartWithId: aCartId. 
 	
 	self assert: (anInterfaceFacade listCart: aCartId) size = 5 .
 
@@ -604,74 +630,70 @@ test21ListingACartWithMoreThanOneItemReturnsAllHisItems
 	! !
 
 
-!InterfaceFacadeTest methodsFor: 'createCart' stamp: 'SC 7/21/2020 21:59:44'!
+!InterfaceFacadeTest methodsFor: 'createCart' stamp: 'SC 7/22/2020 12:49:29'!
 test01CantCreateCartWithInvalidUsername
 
-	| anInvalidUser anInterfaceFacade |
+	| anInterfaceFacade |
 	
 	anInterfaceFacade := InterfaceFacade debitingWith: positiveMerchantProcessor 
-	                                                             acceptingItemsFrom: priceList 
-	                                                             registeringOn: salesList 
+	                                                             acceptingItemsFrom: aPriceList 
+	                                                             registeringOn: aSalesList 
 	                                                             measuringTimeWith: clock.
 	
-	anInvalidUser := StoreTestObjectsFactory invalidUser.
-	
 	self 
-		should: [ anInterfaceFacade createCart: anInvalidUser with: aValidPassword ]
+		should: [ anInterfaceFacade createCartFrom: anInvalidUser with: aValidPassword ]
 		raise: Error - MessageNotUnderstood
 		withExceptionDo: [ :anError |
 			self assert: anError messageText = 'Invalid Credentials' ]
 
 	! !
 
-!InterfaceFacadeTest methodsFor: 'createCart' stamp: 'SC 7/21/2020 22:48:10'!
+!InterfaceFacadeTest methodsFor: 'createCart' stamp: 'SC 7/22/2020 12:49:35'!
 test02CantCreateCartWithInvalidPassword
 
-	| anInvalidPassword anInterfaceFacade |
+	| anInterfaceFacade |
 	
 	anInterfaceFacade := InterfaceFacade debitingWith: positiveMerchantProcessor 
-	                                                             acceptingItemsFrom: priceList 
-	                                                             registeringOn: salesList 
+	                                                             acceptingItemsFrom: aPriceList 
+	                                                             registeringOn: aSalesList 
 	                                                             measuringTimeWith: clock.
 	
-	anInvalidPassword := StoreTestObjectsFactory invalidPassword. 
-
 	self 
-		should: [ anInterfaceFacade createCart: aValidUser with: anInvalidPassword ]
+		should: [ anInterfaceFacade createCartFrom: aValidUser with: anInvalidPassword ]
 		raise: Error - MessageNotUnderstood
 		withExceptionDo: [ :anError |
 			self assert: anError messageText = 'Invalid Credentials' ]
 
 	! !
 
-!InterfaceFacadeTest methodsFor: 'createCart' stamp: 'SC 7/21/2020 22:48:17'!
-test03CanCreateCartWithValidCredentials
+!InterfaceFacadeTest methodsFor: 'createCart' stamp: 'SC 7/22/2020 12:13:58'!
+test03CanCreateCartWithValidCredentialsAndItIsEmpty
 	
 	| aCartId anInterfaceFacade |
 	
 	anInterfaceFacade := InterfaceFacade debitingWith: positiveMerchantProcessor 
-	                                                             acceptingItemsFrom: priceList 
-	                                                             registeringOn: salesList 
+	                                                             acceptingItemsFrom: aPriceList 
+	                                                             registeringOn: aSalesList 
 	                                                             measuringTimeWith: clock.
 	
-	aCartId := anInterfaceFacade createCart: aValidUser with: aValidPassword .
+	aCartId := anInterfaceFacade createCartFrom: aValidUser with: aValidPassword .
 	
 	self assert: (anInterfaceFacade listCart: aCartId) isEmpty .
 	
 	! !
 
-!InterfaceFacadeTest methodsFor: 'createCart' stamp: 'SC 7/21/2020 22:48:20'!
+!InterfaceFacadeTest methodsFor: 'createCart' stamp: 'SC 7/22/2020 12:13:58'!
 test04TwoDifferentCartsHaveTwoDifferentIds
 
 	| aCartId anOtherCartId anInterfaceFacade |
 	
 	anInterfaceFacade := InterfaceFacade debitingWith: positiveMerchantProcessor 
-	                                                             acceptingItemsFrom: priceList 
-	                                                             registeringOn: salesList 
+	                                                             acceptingItemsFrom: aPriceList 
+	                                                             registeringOn: aSalesList 
 	                                                             measuringTimeWith: clock.
 	
-	aCartId := anInterfaceFacade createCart: aValidUser with: aValidPassword .
-	anOtherCartId := anInterfaceFacade createCart: aValidUser with: aValidPassword .
+	aCartId := anInterfaceFacade createCartFrom: aValidUser with: aValidPassword .
+	anOtherCartId := anInterfaceFacade createCartFrom: aValidUser with: aValidPassword .
 	
 	self assert: aCartId ~= anOtherCartId .
 	
@@ -679,42 +701,47 @@ test04TwoDifferentCartsHaveTwoDifferentIds
 	! !
 
 
-!InterfaceFacadeTest methodsFor: 'checkOut' stamp: 'SC 7/21/2020 22:01:09'!
+!InterfaceFacadeTest methodsFor: 'checkOut' stamp: 'SC 7/22/2020 12:19:14'!
 test08CantCheckoutAnInvalidCartId
 		
 	| anInterfaceFacade |
 	
 	anInterfaceFacade := InterfaceFacade debitingWith: positiveMerchantProcessor 
-	                                                             acceptingItemsFrom: priceList 
-	                                                             registeringOn: salesList 
+	                                                             acceptingItemsFrom: aPriceList 
+	                                                             registeringOn: aSalesList 
 	                                                             measuringTimeWith: clock.
 		
 	self 
-		should: [ anInterfaceFacade checkOutOfCart: '' with: '0000000000000000' anExpiration: '092020'  anOwner: 'John'  anCode: '123' ]
+		should: [ anInterfaceFacade checkOutOfCart: '' 
+			                                    withCard: aValidCardNumber
+			                                    ExpiredBy: aValidCreditCardDate  
+			                                    OwnedBy: aValidCardOwner  
+			                                    withCode: aValidCode]
 		raise: Error - MessageNotUnderstood
 		withExceptionDo: [ :anError |
 			self assert: anError messageText = 'Invalid Cart Id' ]
 	
 	! !
 
-!InterfaceFacadeTest methodsFor: 'checkOut' stamp: 'SC 7/21/2020 22:01:17'!
+!InterfaceFacadeTest methodsFor: 'checkOut' stamp: 'SC 7/22/2020 12:28:22'!
 test09CanCheckOutAValidCartId
 		
 	| aCartId anInterfaceFacade transactionId |
 	
 	anInterfaceFacade := InterfaceFacade debitingWith: positiveMerchantProcessor 
-	                                                             acceptingItemsFrom: priceList 
-	                                                             registeringOn: salesList 
+	                                                             acceptingItemsFrom: aPriceList 
+	                                                             registeringOn: aSalesList 
 	                                                             measuringTimeWith: clock.
-	aCartId := anInterfaceFacade createCart: aValidUser with: aValidPassword .
 	
-	anInterfaceFacade add: 1 of: StoreTestObjectsFactory itemSellByTheStore intoCartWith: aCartId. 
+	aCartId := anInterfaceFacade createCartFrom: aValidUser with: aValidPassword .
+	
+	anInterfaceFacade add: 1 of: aBook intoCartWithId: aCartId. 
 	
 	transactionId := anInterfaceFacade checkOutOfCart: aCartId 
-	                                                     with: '1234567812345678' 
-	                                                     anExpiration: '092020' 
-	                                                     anOwner: 'John' 
-	                                                     anCode: '123'. 
+	                                                     withCard: aValidCardNumber 
+	                                                     ExpiredBy: aValidCreditCardDate 
+	                                                     OwnedBy: aValidCardOwner 
+	                                                     withCode: aValidCode. 
 	
 	self 
 		should: [ anInterfaceFacade listCart: aCartId ]
@@ -724,34 +751,25 @@ test09CanCheckOutAValidCartId
 			self deny: transactionId isNil ] .
 	! !
 
-!InterfaceFacadeTest methodsFor: 'checkOut' stamp: 'SC 7/21/2020 22:01:27'!
+!InterfaceFacadeTest methodsFor: 'checkOut' stamp: 'SC 7/22/2020 12:27:25'!
 test10TwoDifferentCheckOutsCreateTwoDifferentTransactionsId
 		
 	| aCartId anotherCartId anInterfaceFacade transactionId anotherTransactionId |
 	
 	anInterfaceFacade := InterfaceFacade debitingWith: positiveMerchantProcessor 
-	                                                             acceptingItemsFrom: priceList 
-	                                                             registeringOn: salesList 
+	                                                             acceptingItemsFrom: aPriceList 
+	                                                             registeringOn: aSalesList 
 	                                                             measuringTimeWith: clock.
 	
-	aCartId := anInterfaceFacade createCart: aValidUser with: aValidPassword .
-	anotherCartId := anInterfaceFacade createCart: aValidUser with: aValidPassword .
+	aCartId := anInterfaceFacade createCartFrom: aValidUser with: aValidPassword .
+	anotherCartId := anInterfaceFacade createCartFrom: aValidUser with: aValidPassword .
 	
-	anInterfaceFacade add: 1 of: StoreTestObjectsFactory itemSellByTheStore intoCartWith: aCartId. 
+	anInterfaceFacade add: 1 of: aBook intoCartWithId: aCartId. 
+	anInterfaceFacade add: 1 of: aBook intoCartWithId: anotherCartId. 
 	
-	transactionId := anInterfaceFacade checkOutOfCart: aCartId 
-	                                                     with: '1234567812345678' 
-	                                                     anExpiration: '092020' 
-	                                                     anOwner: 'John' 
-	                                                     anCode: '123'. 
+	transactionId := self validCheckOutOfCartWithId: aCartId through: anInterfaceFacade .
 	
-	anInterfaceFacade add: 1 of: StoreTestObjectsFactory itemSellByTheStore intoCartWith: anotherCartId. 
-	
-	anotherTransactionId := anInterfaceFacade checkOutOfCart: anotherCartId 
-	                                                     with: '1234567812345678' 
-	                                                     anExpiration: '092020' 
-	                                                     anOwner: 'John' 
-	                                                     anCode: '123'.
+	anotherTransactionId := self validCheckOutOfCartWithId: anotherCartId through: anInterfaceFacade .
 	
 	self deny: transactionId = anotherTransactionId .
 	
@@ -760,8 +778,36 @@ test10TwoDifferentCheckOutsCreateTwoDifferentTransactionsId
 	
 	! !
 
+!InterfaceFacadeTest methodsFor: 'checkOut' stamp: 'SC 7/22/2020 12:43:00'!
+test30CantCheckOutWithExpiredCreditCard
 
-!InterfaceFacadeTest methodsFor: 'setUp' stamp: 'SC 7/21/2020 22:31:00'!
+	| aCartId anInterfaceFacade |
+	
+	anInterfaceFacade := InterfaceFacade debitingWith: positiveMerchantProcessor 
+	                                                             acceptingItemsFrom: aPriceList 
+	                                                             registeringOn: aSalesList 
+	                                                             measuringTimeWith: clock.
+	
+	aCartId := anInterfaceFacade createCartFrom: aValidUser with: aValidPassword .
+	
+	anInterfaceFacade add: 1 of: aBook intoCartWithId: aCartId. 
+	
+	self 
+		should: [ anInterfaceFacade checkOutOfCart: aCartId 
+	                                                     withCard: aValidCardNumber 
+	                                                     ExpiredBy: StoreTestObjectsFactory expiredCreditCardDate 
+	                                                     OwnedBy: aValidCardOwner 
+	                                                     withCode: aValidCode .  ]
+		raise: Error - MessageNotUnderstood
+		withExceptionDo: [ :anError |
+			self assert: anError messageText = 'Cant checkout with expirated Credit Card.'.
+			self assert: anInterfaceFacade sales isEmpty .] .
+
+	
+	! !
+
+
+!InterfaceFacadeTest methodsFor: 'setUp' stamp: 'SC 7/22/2020 12:49:35'!
 setUp
 
 	aValidUser := StoreTestObjectsFactory validUser.
@@ -770,130 +816,143 @@ setUp
 	anotherValidUser := StoreTestObjectsFactory anotherValidUser .
 	anotherValidPassword := StoreTestObjectsFactory anotherValidPassword .
 	
+	anInvalidUser := StoreTestObjectsFactory invalidUser .
+	anInvalidPassword := StoreTestObjectsFactory invalidPassword .
+	
 	clock := Clock with: DateAndTime now .
-	priceList := StoreTestObjectsFactory defaultPriceList .
+	aPriceList := StoreTestObjectsFactory defaultPriceList .
 	positiveMerchantProcessor := MerchantProcessorSimmulator with: [ :anAmmoun :aCC | 'OK'] .
-	salesList := OrderedCollection new .
+	aSalesList := OrderedCollection new .
 	
 	aBook := StoreTestObjectsFactory itemSellByTheStore .
 	
+	aValidCreditCardDate := StoreTestObjectsFactory validCreditCardDate .
+	anInvalidCreditCardDate := StoreTestObjectsFactory expiredCreditCardDate .
+	
+	aValidCardNumber := '1234567812345678' .
+	aValidCode := '123' .
+	aValidCardOwner := 'John' .	
 
 	! !
 
 
-!InterfaceFacadeTest methodsFor: 'rest' stamp: 'SC 7/21/2020 22:04:21'!
+!InterfaceFacadeTest methodsFor: 'session' stamp: 'SC 7/22/2020 12:37:22'!
 test22CreatingACartCreatesACartSession
 	
 	| aCartId anInterfaceFacade |
 	
 	anInterfaceFacade := InterfaceFacade debitingWith: positiveMerchantProcessor 
-	                                                             acceptingItemsFrom: priceList 
-	                                                             registeringOn: salesList 
+	                                                             acceptingItemsFrom: aPriceList 
+	                                                             registeringOn: aSalesList 
 	                                                             measuringTimeWith: clock.
-	aCartId := anInterfaceFacade createCart: aValidUser with: aValidPassword .
 	
-	self assert: (anInterfaceFacade hasCartSession: aCartId) .
+	aCartId := anInterfaceFacade createCartFrom: aValidUser with: aValidPassword .
+	
+	self assert: (anInterfaceFacade hasCartSessionWithId: aCartId) .
 	
 	
 	! !
 
-!InterfaceFacadeTest methodsFor: 'rest' stamp: 'SC 7/21/2020 22:04:32'!
-test23ASessionIsValid5minutesAfterCreated
+!InterfaceFacadeTest methodsFor: 'session' stamp: 'SC 7/22/2020 12:38:19'!
+test23ASessionIsValidAfterCreated
 
 	| aCartId anInterfaceFacade aClock |
 	
 	aClock := Clock with: DateAndTime now.
 	anInterfaceFacade := InterfaceFacade debitingWith: positiveMerchantProcessor 
-	                                                             acceptingItemsFrom: priceList 
-	                                                             registeringOn: salesList 
+	                                                             acceptingItemsFrom: aPriceList 
+	                                                             registeringOn: aSalesList 
 	                                                             measuringTimeWith: aClock.
-	aCartId := anInterfaceFacade createCart: aValidUser with: aValidPassword .
 	
-	aClock advanceTime: 5 minutes.
+	aCartId := anInterfaceFacade createCartFrom: aValidUser with: aValidPassword .
 	
-	self assert: (anInterfaceFacade hasValidSession: aCartId) .
+	self assert: (anInterfaceFacade hasValidSessionWithId: aCartId) .
 
 
 	
 	! !
 
-!InterfaceFacadeTest methodsFor: 'rest' stamp: 'SC 7/21/2020 22:04:40'!
-test24ASessionIsNotValid30minutesAfterCreated
+!InterfaceFacadeTest methodsFor: 'session' stamp: 'SC 7/22/2020 12:38:28'!
+test24ASessionIsNotValid30MinutesAfterCreated
 
 	| aCartId anInterfaceFacade aClock |
 	
 	aClock := Clock with: DateAndTime now.
 	anInterfaceFacade := InterfaceFacade debitingWith: positiveMerchantProcessor 
-	                                                             acceptingItemsFrom: priceList 
-	                                                             registeringOn: salesList 
+	                                                             acceptingItemsFrom: aPriceList 
+	                                                             registeringOn: aSalesList 
 	                                                             measuringTimeWith: aClock.
-	aCartId := anInterfaceFacade createCart: aValidUser with: aValidPassword .
+	
+	aCartId := anInterfaceFacade createCartFrom: aValidUser with: aValidPassword .
 	
 	aClock advanceTime: 30 minutes.
 	
-	self deny: (anInterfaceFacade hasValidSession: aCartId) .
+	self deny: (anInterfaceFacade hasValidSessionWithId: aCartId) .
 
 
 	
 	! !
 
-!InterfaceFacadeTest methodsFor: 'rest' stamp: 'SC 7/21/2020 22:04:46'!
-test25ASessionIsValid5minutesAfterLastOperation
+!InterfaceFacadeTest methodsFor: 'session' stamp: 'SC 7/22/2020 12:38:59'!
+test25ASessionIsValid5MinutesAfterLastOperation
 
 	| aCartId anInterfaceFacade aClock |
 	
 	aClock := Clock with: DateAndTime now.
 	anInterfaceFacade := InterfaceFacade debitingWith: positiveMerchantProcessor 
-	                                                             acceptingItemsFrom: priceList 
-	                                                             registeringOn: salesList 
+	                                                             acceptingItemsFrom: aPriceList 
+	                                                             registeringOn: aSalesList 
 	                                                             measuringTimeWith: aClock.
-	aCartId := anInterfaceFacade createCart: aValidUser with: aValidPassword .
+	
+	aCartId := anInterfaceFacade createCartFrom: aValidUser with: aValidPassword .
 	
 	aClock advanceTime: 29 minutes.
-	anInterfaceFacade add: 1 of: StoreTestObjectsFactory itemSellByTheStore intoCartWith: aCartId. 
-	self assert: (anInterfaceFacade hasValidSession: aCartId) .
+	anInterfaceFacade add: 1 of: aBook intoCartWithId: aCartId. 
+	self assert: (anInterfaceFacade hasValidSessionWithId: aCartId) .
 	
 	aClock advanceTime: 5 minutes .
-	self assert: (anInterfaceFacade hasValidSession: aCartId) .
+	self assert: (anInterfaceFacade hasValidSessionWithId: aCartId) .
 
 
 	
 	! !
 
-!InterfaceFacadeTest methodsFor: 'rest' stamp: 'SC 7/21/2020 22:05:00'!
-test26ASessionIsNotValid30minutesAfterLastOperation
+!InterfaceFacadeTest methodsFor: 'session' stamp: 'SC 7/22/2020 12:39:41'!
+test26ASessionIsNotValid30MinutesAfterLastOperation
 
 	| aCartId anInterfaceFacade aClock |
 	
 	aClock := Clock with: DateAndTime now.
 	anInterfaceFacade := InterfaceFacade debitingWith: positiveMerchantProcessor 
-	                                                             acceptingItemsFrom: priceList 
-	                                                             registeringOn: salesList 
+	                                                             acceptingItemsFrom: aPriceList 
+	                                                             registeringOn: aSalesList 
 	                                                             measuringTimeWith: aClock.
-	aCartId := anInterfaceFacade createCart: aValidUser with: aValidPassword .
+	
+	aCartId := anInterfaceFacade createCartFrom: aValidUser with: aValidPassword .
 	
 	aClock advanceTime: 29 minutes.	
-	anInterfaceFacade add: 1 of: StoreTestObjectsFactory itemSellByTheStore intoCartWith: aCartId. 
-	self assert: (anInterfaceFacade hasValidSession: aCartId) .
+	anInterfaceFacade add: 1 of: aBook intoCartWithId: aCartId. 
+	self assert: (anInterfaceFacade hasValidSessionWithId: aCartId) .
 	
 	aClock advanceTime: 30 minutes .
-	self deny: (anInterfaceFacade hasValidSession: aCartId) .
+	self deny: (anInterfaceFacade hasValidSessionWithId: aCartId) .
 
 
 	
 	! !
 
-!InterfaceFacadeTest methodsFor: 'rest' stamp: 'SC 7/21/2020 22:05:08'!
+!InterfaceFacadeTest methodsFor: 'session' stamp: 'SC 7/22/2020 12:39:32'!
 test27CantListCartWithAnInvalidSession
 
 	| aCartId anInterfaceFacade aClock |
 	
 	aClock := Clock with: DateAndTime now.
 	anInterfaceFacade := InterfaceFacade debitingWith: positiveMerchantProcessor 
-	                                                             acceptingItemsFrom: priceList 
-	                                                             registeringOn: salesList 
+	                                                             acceptingItemsFrom: aPriceList 
+	                                                             registeringOn: aSalesList 
 	                                                             measuringTimeWith: aClock.
-	aCartId := anInterfaceFacade createCart: aValidUser with: aValidPassword .
+	
+	aCartId := anInterfaceFacade createCartFrom: aValidUser with: aValidPassword .
 	
 	aClock advanceTime: 30 minutes.
 	
@@ -907,21 +966,22 @@ test27CantListCartWithAnInvalidSession
 	
 	! !
 
-!InterfaceFacadeTest methodsFor: 'rest' stamp: 'SC 7/21/2020 22:05:20'!
+!InterfaceFacadeTest methodsFor: 'session' stamp: 'SC 7/22/2020 12:40:19'!
 test28CantAddProductsWithAnInvalidSession
 
 	| aCartId anInterfaceFacade aClock |
 	
 	aClock := Clock with: DateAndTime now.
 	anInterfaceFacade := InterfaceFacade debitingWith: positiveMerchantProcessor 
-	                                                             acceptingItemsFrom: priceList 
-	                                                             registeringOn: salesList 
+	                                                             acceptingItemsFrom: aPriceList 
+	                                                             registeringOn: aSalesList 
 	                                                             measuringTimeWith: aClock.
-	aCartId := anInterfaceFacade createCart: aValidUser with: aValidPassword .
+	
+	aCartId := anInterfaceFacade createCartFrom: aValidUser with: aValidPassword .
 	
 	aClock advanceTime: 30 minutes.
 	
-	self should: [ anInterfaceFacade add: 1 of: StoreTestObjectsFactory itemSellByTheStore intoCartWith: aCartId. ]
+	self should: [ anInterfaceFacade add: 1 of: aBook intoCartWithId: aCartId. ]
 		 raise: Error - MessageNotUnderstood 
 		 withExceptionDo: [ :anError |
 			anError messageText = anInterfaceFacade sessionExpiredError .
@@ -932,26 +992,23 @@ test28CantAddProductsWithAnInvalidSession
 	
 	! !
 
-!InterfaceFacadeTest methodsFor: 'rest' stamp: 'SC 7/21/2020 22:05:26'!
+!InterfaceFacadeTest methodsFor: 'session' stamp: 'SC 7/22/2020 12:41:35'!
 test29CantCheckOutWithAnInvalidSession
 
 	| aCartId anInterfaceFacade aClock |
 	
 	aClock := Clock with: DateAndTime now.
 	anInterfaceFacade := InterfaceFacade debitingWith: positiveMerchantProcessor 
-	                                                             acceptingItemsFrom: priceList 
-	                                                             registeringOn: salesList 
+	                                                             acceptingItemsFrom: aPriceList 
+	                                                             registeringOn: aSalesList 
 	                                                             measuringTimeWith: aClock.
-	aCartId := anInterfaceFacade createCart: aValidUser with: aValidPassword .
 	
-	anInterfaceFacade add: 1 of: StoreTestObjectsFactory itemSellByTheStore intoCartWith: aCartId.
+	aCartId := anInterfaceFacade createCartFrom: aValidUser with: aValidPassword .
+	
+	anInterfaceFacade add: 1 of: aBook intoCartWithId: aCartId.
 	aClock advanceTime: 30 minutes.
 	
-	self should: [ anInterfaceFacade checkOutOfCart: aCartId 
-	                                                     with: '1234567812345678' 
-	                                                     anExpiration: '092020' 
-	                                                     anOwner: 'John' 
-	                                                     anCode: '123' ]
+	self should: [ self validCheckOutOfCartWithId: aCartId through: anInterfaceFacade ]
 		 raise: Error - MessageNotUnderstood 
 		 withExceptionDo: [ :anError |
 			anError messageText = anInterfaceFacade sessionExpiredError .
@@ -962,46 +1019,16 @@ test29CantCheckOutWithAnInvalidSession
 	
 	! !
 
-!InterfaceFacadeTest methodsFor: 'rest' stamp: 'SC 7/21/2020 22:43:29'!
-test30CantCheckOutWithExpiredCreditCard
 
-	| aCartId anInterfaceFacade |
-	
-	anInterfaceFacade := InterfaceFacade debitingWith: positiveMerchantProcessor 
-	                                                             acceptingItemsFrom: priceList 
-	                                                             registeringOn: salesList 
-	                                                             measuringTimeWith: clock.
-	
-	aCartId := anInterfaceFacade createCart: aValidUser with: aValidPassword .
-	
-	anInterfaceFacade add: 1 of: StoreTestObjectsFactory itemSellByTheStore intoCartWith: aCartId. 
-	
-	self 
-		should: [ anInterfaceFacade checkOutOfCart: aCartId 
-	                                                     with: '1234567812345678' 
-	                                                     anExpiration: StoreTestObjectsFactory expiredCreditCardDate 
-	                                                     anOwner: 'John' 
-	                                                     anCode: '123'.  ]
-		raise: Error - MessageNotUnderstood
-		withExceptionDo: [ :anError |
-			self assert: anError messageText = 'Cant checkout with expirated Credit Card.'.
-			self assert: anInterfaceFacade sales isEmpty .] .
-
-	
-	! !
-
-
-!InterfaceFacadeTest methodsFor: 'listPurchases' stamp: 'SC 7/21/2020 22:26:45'!
+!InterfaceFacadeTest methodsFor: 'listPurchases' stamp: 'SC 7/22/2020 12:49:29'!
 test11CantListPurchasesOfUserWithInvalidName
 
-	| anInvalidUser anInterfaceFacade |
+	| anInterfaceFacade |
 	
 	anInterfaceFacade := InterfaceFacade debitingWith: positiveMerchantProcessor 
-	                                                             acceptingItemsFrom: priceList 
-	                                                             registeringOn: salesList 
+	                                                             acceptingItemsFrom: aPriceList 
+	                                                             registeringOn: aSalesList 
 	                                                             measuringTimeWith: clock.
-	
-	anInvalidUser := StoreTestObjectsFactory invalidUser.
 		
 	self 
 		should: [ anInterfaceFacade listPurchasesOf: anInvalidUser with: aValidPassword ]
@@ -1012,17 +1039,15 @@ test11CantListPurchasesOfUserWithInvalidName
 	
 	! !
 
-!InterfaceFacadeTest methodsFor: 'listPurchases' stamp: 'SC 7/21/2020 22:26:48'!
+!InterfaceFacadeTest methodsFor: 'listPurchases' stamp: 'SC 7/22/2020 12:49:35'!
 test12CantListPurchasesOfUserWithInvalidPassword
 
-	| anInvalidPassword anInterfaceFacade |
+	| anInterfaceFacade |
 	
 	anInterfaceFacade := InterfaceFacade debitingWith: positiveMerchantProcessor 
-	                                                             acceptingItemsFrom: priceList 
-	                                                             registeringOn: salesList 
+	                                                             acceptingItemsFrom: aPriceList 
+	                                                             registeringOn: aSalesList 
 	                                                             measuringTimeWith: clock.
-	
-	anInvalidPassword := StoreTestObjectsFactory invalidPassword .
 		
 	self 
 		should: [ anInterfaceFacade listPurchasesOf: aValidUser with: anInvalidPassword ]
@@ -1033,43 +1058,40 @@ test12CantListPurchasesOfUserWithInvalidPassword
 	
 	! !
 
-!InterfaceFacadeTest methodsFor: 'listPurchases' stamp: 'SC 7/21/2020 22:12:19'!
-test13CantListPurchasesOfValidUserWithNoPurchases
+!InterfaceFacadeTest methodsFor: 'listPurchases' stamp: 'SC 7/22/2020 12:30:13'!
+test13PurchaseListOfValidUserWithNoPurchasesIsEmpty
 		
 	| aPurchasesList anInterfaceFacade |
 		
 	anInterfaceFacade := InterfaceFacade debitingWith: positiveMerchantProcessor 
-	                                                             acceptingItemsFrom: priceList 
-	                                                             registeringOn: salesList 
+	                                                             acceptingItemsFrom: aPriceList 
+	                                                             registeringOn: aSalesList 
 	                                                             measuringTimeWith: clock.
 	
 	aPurchasesList := anInterfaceFacade listPurchasesOf: aValidUser with: aValidPassword .
 	
 	self assert: aPurchasesList isEmpty .
+	self assert: aPurchasesList total = 0 .
 	
 
 	
 	! !
 
-!InterfaceFacadeTest methodsFor: 'listPurchases' stamp: 'SC 7/21/2020 22:31:33'!
+!InterfaceFacadeTest methodsFor: 'listPurchases' stamp: 'SC 7/22/2020 12:30:51'!
 test14CanListPurchasesOfValidUserWithOnePurchase
 		
 	| aCartId anInterfaceFacade aPurchasesList |
 	
 	anInterfaceFacade := InterfaceFacade debitingWith: positiveMerchantProcessor 
-	                                                             acceptingItemsFrom: priceList 
-	                                                             registeringOn: salesList 
+	                                                             acceptingItemsFrom: aPriceList 
+	                                                             registeringOn: aSalesList 
 	                                                             measuringTimeWith: clock.
 	
-	aCartId := anInterfaceFacade createCart: aValidUser with: aValidPassword .
+	aCartId := anInterfaceFacade createCartFrom: aValidUser with: aValidPassword .
 	
-	anInterfaceFacade add: 1 of: aBook intoCartWith: aCartId. 
+	anInterfaceFacade add: 1 of: aBook intoCartWithId: aCartId. 
 	
-	anInterfaceFacade checkOutOfCart: aCartId 
-	                            with: '1234567812345678' 
-	                            anExpiration: StoreTestObjectsFactory notExpiredDate 
-	                            anOwner: 'John' 
-	                            anCode: '123'. 
+	self validCheckOutOfCartWithId: aCartId through: anInterfaceFacade . 
 		
 	aPurchasesList := anInterfaceFacade listPurchasesOf: aValidUser with: aValidPassword .
 	
@@ -1079,99 +1101,77 @@ test14CanListPurchasesOfValidUserWithOnePurchase
 	
 	! !
 
-!InterfaceFacadeTest methodsFor: 'listPurchases' stamp: 'SC 7/21/2020 22:33:41'!
+!InterfaceFacadeTest methodsFor: 'listPurchases' stamp: 'SC 7/22/2020 12:31:28'!
 test15TheOnlySaleOfAValidUserIsInHisPurchaseList
 		
 	| aCartId anInterfaceFacade aPurchasesList |
 	
 	anInterfaceFacade := InterfaceFacade debitingWith: positiveMerchantProcessor 
-	                                                             acceptingItemsFrom: priceList 
-	                                                             registeringOn: salesList 
+	                                                             acceptingItemsFrom: aPriceList 
+	                                                             registeringOn: aSalesList 
 	                                                             measuringTimeWith: clock.
 	
-	aCartId := anInterfaceFacade createCart: aValidUser with: aValidPassword .
+	aCartId := anInterfaceFacade createCartFrom: aValidUser with: aValidPassword .
 	
-	anInterfaceFacade add: 1 of: aBook intoCartWith: aCartId. 
+	anInterfaceFacade add: 1 of: aBook intoCartWithId: aCartId. 
 	
-	anInterfaceFacade checkOutOfCart: aCartId 
-	                            with: '1234567812345678' 
-	                            anExpiration: StoreTestObjectsFactory notExpiredDate 
-	                            anOwner: 'John' 
-	                            anCode: '123'. 
+	self validCheckOutOfCartWithId: aCartId through: anInterfaceFacade .
 		
 	aPurchasesList := anInterfaceFacade listPurchasesOf: aValidUser with: aValidPassword .
 	
 	self assert: (aPurchasesList quantityOf: aBook) = 1.
-	self assert: aPurchasesList total = (priceList at: aBook) .
+	self assert: aPurchasesList total = (aPriceList at: aBook) .
 	
 
 	
 	! !
 
-!InterfaceFacadeTest methodsFor: 'listPurchases' stamp: 'SC 7/21/2020 22:35:33'!
+!InterfaceFacadeTest methodsFor: 'listPurchases' stamp: 'SC 7/22/2020 12:33:09'!
 test16TotalOfAllPurchasesOfAValidUserAreInHisPurchaseList
 		
 	| aCartId anotherCartId anInterfaceFacade aPurchasesList |
 	
 	anInterfaceFacade := InterfaceFacade debitingWith: positiveMerchantProcessor 
-	                                                             acceptingItemsFrom: priceList 
-	                                                             registeringOn: salesList 
+	                                                             acceptingItemsFrom: aPriceList 
+	                                                             registeringOn: aSalesList 
 	                                                             measuringTimeWith: clock.
 	
-	aCartId := anInterfaceFacade createCart: aValidUser with: aValidPassword .
-	anotherCartId := anInterfaceFacade createCart: aValidUser with: aValidPassword .
+	aCartId := anInterfaceFacade createCartFrom: aValidUser with: aValidPassword .
+	anotherCartId := anInterfaceFacade createCartFrom: aValidUser with: aValidPassword .
 	
-	anInterfaceFacade add: 1 of: aBook intoCartWith: aCartId. 
-	anInterfaceFacade add: 1 of: aBook intoCartWith: anotherCartId. 
+	anInterfaceFacade add: 1 of: aBook intoCartWithId: aCartId. 
+	anInterfaceFacade add: 1 of: aBook intoCartWithId: anotherCartId. 
 	
-	anInterfaceFacade checkOutOfCart: aCartId 
-	                            with: '1234567812345678' 
-	                            anExpiration: StoreTestObjectsFactory notExpiredDate 
-	                            anOwner: 'John' 
-	                            anCode: '123'. 
-	
-	anInterfaceFacade checkOutOfCart: anotherCartId 
-	                            with: '1234567812345678' 
-	                            anExpiration: StoreTestObjectsFactory notExpiredDate 
-	                            anOwner: 'John' 
-	                            anCode: '123'. 
+	self validCheckOutOfCartWithId: aCartId through: anInterfaceFacade  .
+	self validCheckOutOfCartWithId: anotherCartId through: anInterfaceFacade .
 		
 	aPurchasesList := anInterfaceFacade listPurchasesOf: aValidUser with: aValidPassword .
 	
 	self assert: (aPurchasesList quantityOf: aBook) = 2.
-	self assert: aPurchasesList total = ((priceList at: aBook)*2) .
+	self assert: aPurchasesList total = ((aPriceList at: aBook)*2) .
 	
 
 	
 	! !
 
-!InterfaceFacadeTest methodsFor: 'listPurchases' stamp: 'SC 7/21/2020 22:36:18'!
+!InterfaceFacadeTest methodsFor: 'listPurchases' stamp: 'SC 7/22/2020 12:33:47'!
 test17PurchaseListsOfDifferentUsersAreDifferent
 		
 	| aCartId anotherCartId anInterfaceFacade aPurchasesList anotherPurchasesList |
 	
 	anInterfaceFacade := InterfaceFacade debitingWith: positiveMerchantProcessor 
-	                                                             acceptingItemsFrom: priceList 
-	                                                             registeringOn: salesList 
+	                                                             acceptingItemsFrom: aPriceList 
+	                                                             registeringOn: aSalesList 
 	                                                             measuringTimeWith: clock.
 	
-	aCartId := anInterfaceFacade createCart: aValidUser with: aValidPassword .
-	anotherCartId := anInterfaceFacade createCart: anotherValidUser with: anotherValidPassword .
+	aCartId := anInterfaceFacade createCartFrom: aValidUser with: aValidPassword .
+	anotherCartId := anInterfaceFacade createCartFrom: anotherValidUser with: anotherValidPassword .
 	
-	anInterfaceFacade add: 1 of: aBook intoCartWith: aCartId. 
-	anInterfaceFacade add: 1 of: aBook intoCartWith: anotherCartId. 
+	anInterfaceFacade add: 1 of: aBook intoCartWithId: aCartId. 
+	anInterfaceFacade add: 1 of: aBook intoCartWithId: anotherCartId. 
 	
-	anInterfaceFacade checkOutOfCart: aCartId 
-	                            with: '1234567812345678' 
-	                            anExpiration: StoreTestObjectsFactory notExpiredDate 
-	                            anOwner: 'John' 
-	                            anCode: '123'. 
-	
-	anInterfaceFacade checkOutOfCart: anotherCartId 
-	                            with: '1234567812345678' 
-	                            anExpiration: StoreTestObjectsFactory notExpiredDate 
-	                            anOwner: 'John' 
-	                            anCode: '123'. 
+	self validCheckOutOfCartWithId: aCartId through: anInterfaceFacade .
+	self validCheckOutOfCartWithId: anotherCartId through: anInterfaceFacade .
 		
 	aPurchasesList := anInterfaceFacade listPurchasesOf: aValidUser with: aValidPassword .
 	anotherPurchasesList := anInterfaceFacade listPurchasesOf: anotherValidUser with: anotherValidPassword .
@@ -1182,45 +1182,47 @@ test17PurchaseListsOfDifferentUsersAreDifferent
 	
 	! !
 
-!InterfaceFacadeTest methodsFor: 'listPurchases' stamp: 'SC 7/21/2020 22:38:37'!
+!InterfaceFacadeTest methodsFor: 'listPurchases' stamp: 'SC 7/22/2020 12:34:48'!
 test18PurchaseListsOfDifferentUsersAreDifferentAndContainTheCorrespondingPurchases
 		
 	| aCartId anotherCartId anInterfaceFacade aPurchasesList anotherPurchasesList |
 	
 	anInterfaceFacade := InterfaceFacade debitingWith: positiveMerchantProcessor 
-	                                                             acceptingItemsFrom: priceList 
-	                                                             registeringOn: salesList 
+	                                                             acceptingItemsFrom: aPriceList 
+	                                                             registeringOn: aSalesList 
 	                                                             measuringTimeWith: clock.
 	
-	aCartId := anInterfaceFacade createCart: aValidUser with: aValidPassword .
-	anotherCartId := anInterfaceFacade createCart: anotherValidUser with: anotherValidPassword .
+	aCartId := anInterfaceFacade createCartFrom: aValidUser with: aValidPassword .
+	anotherCartId := anInterfaceFacade createCartFrom: anotherValidUser with: anotherValidPassword .
 	
-	anInterfaceFacade add: 1 of: aBook intoCartWith: aCartId. 
-	anInterfaceFacade add: 2 of: aBook intoCartWith: anotherCartId. 
+	anInterfaceFacade add: 1 of: aBook intoCartWithId: aCartId. 
+	anInterfaceFacade add: 2 of: aBook intoCartWithId: anotherCartId. 
 	
-	anInterfaceFacade checkOutOfCart: aCartId 
-	                            with: '1234567812345678' 
-	                            anExpiration: StoreTestObjectsFactory notExpiredDate 
-	                            anOwner: 'John' 
-	                            anCode: '123'. 
-	
-	anInterfaceFacade checkOutOfCart: anotherCartId 
-	                            with: '1234567812345678' 
-	                            anExpiration: StoreTestObjectsFactory notExpiredDate 
-	                            anOwner: 'John' 
-	                            anCode: '123'. 
+	self validCheckOutOfCartWithId: aCartId through: anInterfaceFacade .
+	self validCheckOutOfCartWithId: anotherCartId through: anInterfaceFacade .
 		
 	aPurchasesList := anInterfaceFacade listPurchasesOf: aValidUser with: aValidPassword .
 	anotherPurchasesList := anInterfaceFacade listPurchasesOf: anotherValidUser with: anotherValidPassword .
 	
 	self assert: (aPurchasesList quantityOf: aBook) = 1.
-	self assert: aPurchasesList total = (priceList at: aBook) .
-	
+	self assert: aPurchasesList total = (aPriceList at: aBook) .
 	self assert: (anotherPurchasesList quantityOf: aBook) = 2.
-	self assert: anotherPurchasesList total = ((priceList at: aBook)*2) .	
+	self assert: anotherPurchasesList total = ((aPriceList at: aBook)*2) .	
 
 	
 	! !
+
+
+!InterfaceFacadeTest methodsFor: 'support' stamp: 'SC 7/22/2020 12:26:28'!
+validCheckOutOfCartWithId: aCartId through: anInterfaceFacade
+
+	^anInterfaceFacade checkOutOfCart: aCartId 
+			                  withCard: aValidCardNumber
+			                  ExpiredBy: aValidCreditCardDate  
+			                  OwnedBy: aValidCardOwner  
+			                  withCode: aValidCode
+
+! !
 
 
 !classDefinition: #AuthenticationSystem category: #TusLibros!
@@ -1350,11 +1352,6 @@ acceptingItemsOf: aPriceList
 
 	^self new initializeAcceptingItemsOf: aPriceList ! !
 
-!Cart class methodsFor: 'instance creation' stamp: 'SC 7/18/2020 17:05:49'!
-acceptingItemsOf: aPriceList from: aBuyer
-
-	^self new initializeAcceptingItemsOf: aPriceList from:aBuyer ! !
-
 
 !classDefinition: #CashierCart category: #TusLibros!
 Object subclass: #CashierCart
@@ -1385,22 +1382,6 @@ assertIsValidCreditCard: aCreditCard
 	(aCreditCard isExpiratedBy: Date today) ifTrue: [ self error: self creditCardExpirationError ].! !
 
 
-!CashierCart methodsFor: 'operations' stamp: 'SC 7/16/2020 12:28:48'!
-checkOutOf: aCart with: aCreditCard debitingWith: aMerchantProcessor
-
-	| aSale |
-	
-	self assertIsValidCart: aCart.
-	self assertIsValidCreditCard: aCreditCard. 
-	
-	aMerchantProcessor debit: aCart total from: aCreditCard .
-	
-	aSale := Sale of: aCart.
-	
-	sales add: aSale.
-	aCart clear.
-	! !
-
 !CashierCart methodsFor: 'operations' stamp: 'SC 7/21/2020 20:44:03'!
 checkOutOf: aCart with: aCreditCard debitingWith: aMerchantProcessor from: aUsername
 
@@ -1429,7 +1410,7 @@ with: aSalesList
 CashierCart class
 	instanceVariableNames: ''!
 
-!CashierCart class methodsFor: 'initialize' stamp: 'SC 7/16/2020 12:07:11'!
+!CashierCart class methodsFor: 'instance creation' stamp: 'SC 7/16/2020 12:07:11'!
 with: aSalesList
 
 	^self new with: aSalesList .! !
@@ -1464,7 +1445,7 @@ with: aTime
 Clock class
 	instanceVariableNames: ''!
 
-!Clock class methodsFor: 'as yet unclassified' stamp: 'SC 7/21/2020 20:48:33'!
+!Clock class methodsFor: 'initialize' stamp: 'SC 7/21/2020 20:48:33'!
 with: aTime
 
 	^self new with: aTime! !
@@ -1567,22 +1548,8 @@ Object subclass: #InterfaceFacade
 	poolDictionaries: ''
 	category: 'TusLibros'!
 
-!InterfaceFacade methodsFor: 'operations' stamp: 'SC 7/21/2020 21:56:37'!
-add: aQuantity of: aBook intoCartWith: aCartId
-
-	| aCart |
-	
-	aCart := carts at: aCartId ifAbsent: [self error: 'Invalid Cart Id'].
-	
-	self validateSessionFrom: aCartId .
-	
-	aCart add: aQuantity of: aBook. 
-	
-	self updateTimeOfSessionFrom: aCartId .
-	! !
-
-!InterfaceFacade methodsFor: 'operations' stamp: 'SC 7/21/2020 21:40:34'!
-checkOutOfCart: aCartId with: aCCNumber anExpiration: aCCExpiration anOwner: aCCOwner anCode: aCCCode
+!InterfaceFacade methodsFor: 'checkOut' stamp: 'SC 7/22/2020 13:00:33'!
+checkOutOfCart: aCartId withCard: aCCNumber ExpiredBy: aCCExpiration OwnedBy: aCCOwner withCode: aCCCode
 
 	| aCart aCreditCard aCashier aUsername |
 
@@ -1596,34 +1563,27 @@ checkOutOfCart: aCartId with: aCCNumber anExpiration: aCCExpiration anOwner: aCC
 	
 	aCashier checkOutOf: aCart with: aCreditCard  debitingWith: merchantProcessor from: aUsername. 
 	
-	carts removeKey: aCartId ifAbsent: [self error: 'Invalid Cart Id'].
+	carts removeKey: aCartId .
 	
 	self updateTimeOfSessionFrom: aCartId .
 	
 	^ salesList size.
 ! !
 
-!InterfaceFacade methodsFor: 'operations' stamp: 'SC 7/21/2020 21:57:01'!
-createCart: aUsername with: aPassword
 
-	| aCart aCartId aCartSession |
-	
-	AuthenticationSystemSimulator new isValid: aUsername with: aPassword . 
-	
-	aCart := Cart new initializeAcceptingItemsOf: priceList .
-	aCartId := self generateCartId.
-	
-	aCartSession := CartSession from: aUsername with: clock.
-	
-	carts add: aCartId -> aCart .
-	cartSessions add: aCartId -> aCartSession.
-	
-	^ aCartId .! !
+!InterfaceFacade methodsFor: 'add' stamp: 'SC 7/22/2020 12:14:36'!
+add: aQuantity of: aBook intoCartWithId: aCartId
 
-!InterfaceFacade methodsFor: 'operations' stamp: 'FE 7/16/2020 21:00:28'!
-generateCartId
-
-	^ carts size + 1! !
+	| aCart |
+	
+	aCart := carts at: aCartId ifAbsent: [self error: 'Invalid Cart Id'].
+	
+	self validateSessionFrom: aCartId .
+	
+	aCart add: aQuantity of: aBook. 
+	
+	self updateTimeOfSessionFrom: aCartId .
+	! !
 
 
 !InterfaceFacade methodsFor: 'initialization' stamp: 'SC 7/21/2020 21:56:02'!
@@ -1638,13 +1598,13 @@ debitingWith: aMerchantProcessor acceptingItemsFrom: aPriceList registeringOn: a
 	! !
 
 
-!InterfaceFacade methodsFor: 'session' stamp: 'SC 7/21/2020 20:26:57'!
-hasCartSession: aCartId
+!InterfaceFacade methodsFor: 'session' stamp: 'SC 7/22/2020 12:37:22'!
+hasCartSessionWithId: aCartId
 
 	^cartSessions includesKey: aCartId .! !
 
-!InterfaceFacade methodsFor: 'session' stamp: 'SC 7/21/2020 21:19:36'!
-hasValidSession: aCartId
+!InterfaceFacade methodsFor: 'session' stamp: 'SC 7/22/2020 12:37:12'!
+hasValidSessionWithId: aCartId
 
 	| aCartSession |
 
@@ -1717,7 +1677,24 @@ sales
 	^salesList ! !
 
 
-!InterfaceFacade methodsFor: 'as yet unclassified' stamp: 'SC 7/21/2020 22:24:16'!
+!InterfaceFacade methodsFor: 'create' stamp: 'SC 7/22/2020 12:13:58'!
+createCartFrom: aUsername with: aPassword
+
+	| aCart aCartId aCartSession |
+	
+	AuthenticationSystemSimulator new isValid: aUsername with: aPassword . 
+	
+	aCart := Cart new initializeAcceptingItemsOf: priceList .
+	aCartId := self generateCartId.
+	
+	aCartSession := CartSession from: aUsername with: clock.
+	
+	carts add: aCartId -> aCart .
+	cartSessions add: aCartId -> aCartSession.
+	
+	^ aCartId .! !
+
+!InterfaceFacade methodsFor: 'create' stamp: 'SC 7/21/2020 22:24:16'!
 createTicket: aListOfSales
 
 	| aTicket |
@@ -1733,21 +1710,21 @@ createTicket: aListOfSales
 	
 	! !
 
+!InterfaceFacade methodsFor: 'create' stamp: 'FE 7/16/2020 21:00:28'!
+generateCartId
+
+	^ carts size + 1! !
+
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
 !classDefinition: 'InterfaceFacade class' category: #TusLibros!
 InterfaceFacade class
 	instanceVariableNames: ''!
 
-!InterfaceFacade class methodsFor: 'as yet unclassified' stamp: 'SC 7/21/2020 21:53:57'!
+!InterfaceFacade class methodsFor: 'initialize' stamp: 'SC 7/21/2020 21:53:57'!
 debitingWith: aMerchantProcessor acceptingItemsFrom: aPriceList registeringOn: aSalesList measuringTimeWith: Clock
 
 	^self new debitingWith: aMerchantProcessor acceptingItemsFrom: aPriceList registeringOn: aSalesList measuringTimeWith: Clock .! !
-
-!InterfaceFacade class methodsFor: 'as yet unclassified' stamp: 'SC 7/21/2020 20:51:52'!
-with: aClock
-
-	^self new with: aClock .! !
 
 
 !classDefinition: #MerchantProcessor category: #TusLibros!
@@ -1798,13 +1775,6 @@ Object subclass: #Sale
 	poolDictionaries: ''
 	category: 'TusLibros'!
 
-!Sale methodsFor: 'initialize' stamp: 'SC 7/21/2020 20:41:04'!
-initializeWith: aCart
-
-	items := aCart items copy.
-	priceList := aCart priceList copy.
-	date := Date today.! !
-
 !Sale methodsFor: 'initialize' stamp: 'SC 7/21/2020 20:44:35'!
 initializeWith: aCart and: aUsername
 
@@ -1814,21 +1784,20 @@ initializeWith: aCart and: aUsername
 	date := Date today.! !
 
 
-!Sale methodsFor: 'operations' stamp: 'SC 7/18/2020 17:26:11'!
+!Sale methodsFor: 'access' stamp: 'SC 7/21/2020 22:31:53'!
+items
+
+	^items .! !
+
+!Sale methodsFor: 'access' stamp: 'SC 7/18/2020 17:26:11'!
 owner
 
 	^owner .! !
 
-!Sale methodsFor: 'operations' stamp: 'SC 7/11/2020 16:35:18'!
+!Sale methodsFor: 'access' stamp: 'SC 7/11/2020 16:35:18'!
 total
 
 	^ items sum: [ :item | priceList at: item] .! !
-
-
-!Sale methodsFor: 'as yet unclassified' stamp: 'SC 7/21/2020 22:31:53'!
-items
-
-	^items .! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -1836,12 +1805,7 @@ items
 Sale class
 	instanceVariableNames: ''!
 
-!Sale class methodsFor: 'as yet unclassified' stamp: 'SC 7/16/2020 12:29:09'!
-of: aCart
-
-	^Sale new initializeWith: aCart .! !
-
-!Sale class methodsFor: 'as yet unclassified' stamp: 'SC 7/21/2020 20:44:19'!
+!Sale class methodsFor: 'instance creation' stamp: 'SC 7/21/2020 20:44:19'!
 of: aCart from: aUsername
 
 	^self new initializeWith: aCart and: aUsername.! !
@@ -1860,22 +1824,59 @@ Object subclass: #StoreTestObjectsFactory
 StoreTestObjectsFactory class
 	instanceVariableNames: ''!
 
-!StoreTestObjectsFactory class methodsFor: 'support' stamp: 'SC 7/18/2020 17:37:54'!
+!StoreTestObjectsFactory class methodsFor: 'users' stamp: 'SC 7/18/2020 17:37:54'!
 anotherValidPassword
 	
 	^ 'anotherValidPassword'! !
 
-!StoreTestObjectsFactory class methodsFor: 'support' stamp: 'SC 7/18/2020 17:37:31'!
+!StoreTestObjectsFactory class methodsFor: 'users' stamp: 'SC 7/18/2020 17:37:31'!
 anotherValidUser
 	
 	^ 'anotherValidUser'! !
 
-!StoreTestObjectsFactory class methodsFor: 'support' stamp: 'SC 7/14/2020 20:06:24'!
+!StoreTestObjectsFactory class methodsFor: 'users' stamp: 'FE 7/16/2020 18:54:31'!
+invalidPassword
+	
+	^ 'invalidPassword'! !
+
+!StoreTestObjectsFactory class methodsFor: 'users' stamp: 'FE 7/16/2020 18:54:19'!
+invalidUser
+	
+	^ 'invalidUser'! !
+
+!StoreTestObjectsFactory class methodsFor: 'users' stamp: 'FE 7/16/2020 18:55:33'!
+validPassword
+	
+	^ 'validPassword'! !
+
+!StoreTestObjectsFactory class methodsFor: 'users' stamp: 'FE 7/16/2020 18:55:47'!
+validUser
+	
+	^ 'validUser'! !
+
+
+!StoreTestObjectsFactory class methodsFor: 'cards' stamp: 'SC 7/21/2020 22:41:46'!
+expiredCreditCardDate
+	
+	^ '01' , (Date today yearNumber - 1) asString .! !
+
+!StoreTestObjectsFactory class methodsFor: 'cards' stamp: 'FE 7/16/2020 19:46:42'!
+invalidCartId
+	
+	^ 'invalidCartId'! !
+
+!StoreTestObjectsFactory class methodsFor: 'cards' stamp: 'SC 7/21/2020 22:47:30'!
+validCreditCardDate
+	
+	^ '01' , (Date today yearNumber + 1) asString .! !
+
+
+!StoreTestObjectsFactory class methodsFor: 'cart' stamp: 'SC 7/14/2020 20:06:24'!
 createCart
 	
 	^Cart acceptingItemsOf: self defaultPriceList! !
 
-!StoreTestObjectsFactory class methodsFor: 'support' stamp: 'SC 7/16/2020 12:23:04'!
+!StoreTestObjectsFactory class methodsFor: 'cart' stamp: 'SC 7/16/2020 12:23:04'!
 createCartWithItem
 	
 	| aCart |
@@ -1883,7 +1884,13 @@ createCartWithItem
 	aCart := Cart acceptingItemsOf: self defaultPriceList .
 	^aCart add: self itemSellByTheStore.! !
 
-!StoreTestObjectsFactory class methodsFor: 'support' stamp: 'SC 7/14/2020 20:05:02'!
+!StoreTestObjectsFactory class methodsFor: 'cart' stamp: 'FE 7/16/2020 19:46:35'!
+validCartId
+	
+	^ 'validCartId'! !
+
+
+!StoreTestObjectsFactory class methodsFor: 'shopItems' stamp: 'SC 7/14/2020 20:05:02'!
 defaultPriceList
 	
 	| priceList |
@@ -1895,60 +1902,15 @@ defaultPriceList
 	^ priceList
 	! !
 
-!StoreTestObjectsFactory class methodsFor: 'support' stamp: 'SC 7/21/2020 22:41:46'!
-expiredCreditCardDate
-	
-	^ '01' , (Date today yearNumber - 1) asString .! !
-
-!StoreTestObjectsFactory class methodsFor: 'support' stamp: 'FE 7/16/2020 19:46:42'!
-invalidCartId
-	
-	^ 'invalidCartId'! !
-
-!StoreTestObjectsFactory class methodsFor: 'support' stamp: 'FE 7/16/2020 18:54:31'!
-invalidPassword
-	
-	^ 'invalidPassword'! !
-
-!StoreTestObjectsFactory class methodsFor: 'support' stamp: 'FE 7/16/2020 18:54:19'!
-invalidUser
-	
-	^ 'invalidUser'! !
-
-!StoreTestObjectsFactory class methodsFor: 'support' stamp: 'SC 7/14/2020 20:06:06'!
+!StoreTestObjectsFactory class methodsFor: 'shopItems' stamp: 'SC 7/14/2020 20:06:06'!
 itemNotSellByTheStore
 	
 	^ 'invalidBook'! !
 
-!StoreTestObjectsFactory class methodsFor: 'support' stamp: 'SC 7/14/2020 20:04:45'!
+!StoreTestObjectsFactory class methodsFor: 'shopItems' stamp: 'SC 7/14/2020 20:04:45'!
 itemSellByTheStore
 	
 	^ 'validBook'! !
-
-!StoreTestObjectsFactory class methodsFor: 'support' stamp: 'SC 7/18/2020 17:20:10'!
-notExpiredDate
-
-	^'01' , (Date today yearNumber + 1) asString! !
-
-!StoreTestObjectsFactory class methodsFor: 'support' stamp: 'FE 7/16/2020 19:46:35'!
-validCartId
-	
-	^ 'validCartId'! !
-
-!StoreTestObjectsFactory class methodsFor: 'support' stamp: 'SC 7/21/2020 22:47:30'!
-validCreditCardDate
-	
-	^ '01' , (Date today yearNumber + 1) asString .! !
-
-!StoreTestObjectsFactory class methodsFor: 'support' stamp: 'FE 7/16/2020 18:55:33'!
-validPassword
-	
-	^ 'validPassword'! !
-
-!StoreTestObjectsFactory class methodsFor: 'support' stamp: 'FE 7/16/2020 18:55:47'!
-validUser
-	
-	^ 'validUser'! !
 
 
 !classDefinition: #Ticket category: #TusLibros!
@@ -1976,17 +1938,18 @@ initialize
 	total := 0 .! !
 
 
-!Ticket methodsFor: 'as yet unclassified' stamp: 'SC 7/21/2020 22:27:20'!
+!Ticket methodsFor: 'test' stamp: 'SC 7/21/2020 22:27:20'!
 isEmpty
 
 	^items isEmpty .! !
 
-!Ticket methodsFor: 'as yet unclassified' stamp: 'SC 7/21/2020 22:32:55'!
+
+!Ticket methodsFor: 'access' stamp: 'SC 7/21/2020 22:32:55'!
 quantityOf: aBook
 
 	^items occurrencesOf: aBook .! !
 
-!Ticket methodsFor: 'as yet unclassified' stamp: 'SC 7/21/2020 22:33:59'!
+!Ticket methodsFor: 'access' stamp: 'SC 7/21/2020 22:33:59'!
 total
 
 	^total .! !
