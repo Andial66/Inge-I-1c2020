@@ -431,75 +431,59 @@ TestCase subclass: #CreditCardTest
 	poolDictionaries: ''
 	category: 'TusLibros'!
 
-!CreditCardTest methodsFor: 'tests' stamp: 'SC 7/11/2020 16:56:27'!
+!CreditCardTest methodsFor: 'tests' stamp: 'SC 7/23/2020 12:01:16'!
 test01CantCreateCardWithInvalidNumber
 
-	| aCreditCard |
-	
-	aCreditCard  := CreditCard new.
-
 	self 
-		should: [aCreditCard initializeWithANumber: '000000000000000' name: 'John' expiration: '042022' andCode: '312' ]
+		should: [CreditCard withNumber: '000000000000000' name: 'John' expiration: '042022' andCode: '312' ]
 		raise: Error - MessageNotUnderstood
 		withExceptionDo: [ :anError |
-			self assert: anError messageText = aCreditCard invalidCardNumberError. ]
+			self assert: anError messageText = CreditCard invalidCardNumberError. ]
 
 	
 	
 
 	! !
 
-!CreditCardTest methodsFor: 'tests' stamp: 'FE 7/11/2020 20:47:28'!
+!CreditCardTest methodsFor: 'tests' stamp: 'SC 7/23/2020 11:58:31'!
 test02CantCreateCardWithInvalidName
 
-	| aCreditCard |
-	
-	aCreditCard  := CreditCard new.
-
 	self 
-		should: [aCreditCard initializeWithANumber: '1111222233334444' name: '' expiration: '042022' andCode: '312' ]
+		should: [CreditCard withNumber: '1111222233334444' name: '' expiration: '042022' andCode: '312' ]
 		raise: Error - MessageNotUnderstood
 		withExceptionDo: [ :anError |
-			self assert: anError messageText = aCreditCard invalidCardNameError. ]
+			self assert: anError messageText = CreditCard invalidCardNameError. ]
 
 	
 	
 
 	! !
 
-!CreditCardTest methodsFor: 'tests' stamp: 'SC 7/21/2020 22:44:55'!
+!CreditCardTest methodsFor: 'tests' stamp: 'SC 7/23/2020 11:58:59'!
 test03CantCreateCardWithExpiredDate
 
-	| aCreditCard |
-	
-	aCreditCard  := CreditCard new.
-
 	self 
-		should: [aCreditCard initializeWithANumber: '1111222233334444' 
-			                         name: 'John' 
-			                         expiration: '002020' 
-			                         andCode: '312' ]
+		should: [CreditCard withNumber: '1111222233334444' 
+			                           name: 'John' 
+			                           expiration: '002020' 
+			                           andCode: '312' ]
 		raise: Error - MessageNotUnderstood
 		withExceptionDo: [ :anError |
-			self assert: anError messageText = aCreditCard invalidExpirationDateError. ]
+			self assert: anError messageText = CreditCard invalidExpirationDateError. ]
 
 	
 	
 
 	! !
 
-!CreditCardTest methodsFor: 'tests' stamp: 'SC 7/11/2020 16:57:11'!
+!CreditCardTest methodsFor: 'tests' stamp: 'SC 7/23/2020 11:59:24'!
 test04CantCreateCardWithInvalidSecurityNumber
 
-	| aCreditCard |
-	
-	aCreditCard  := CreditCard new.
-
 	self 
-		should: [aCreditCard initializeWithANumber: '1111222233334444' name: 'John' expiration: '102020' andCode: '31a' ]
+		should: [CreditCard withNumber: '1111222233334444' name: 'John' expiration: '102020' andCode: '31a' ]
 		raise: Error - MessageNotUnderstood
 		withExceptionDo: [ :anError |
-			self assert: anError messageText = aCreditCard invalidSecurityCodeError. ]
+			self assert: anError messageText = CreditCard invalidSecurityCodeError. ]
 
 	
 	
@@ -751,7 +735,7 @@ test09CanCheckOutAValidCartId
 			self deny: transactionId isNil ] .
 	! !
 
-!InterfaceFacadeTest methodsFor: 'checkOut' stamp: 'SC 7/22/2020 12:27:25'!
+!InterfaceFacadeTest methodsFor: 'checkOut' stamp: 'SC 7/23/2020 12:21:22'!
 test10TwoDifferentCheckOutsCreateTwoDifferentTransactionsId
 		
 	| aCartId anotherCartId anInterfaceFacade transactionId anotherTransactionId |
@@ -768,7 +752,6 @@ test10TwoDifferentCheckOutsCreateTwoDifferentTransactionsId
 	anInterfaceFacade add: 1 of: aBook intoCartWithId: anotherCartId. 
 	
 	transactionId := self validCheckOutOfCartWithId: aCartId through: anInterfaceFacade .
-	
 	anotherTransactionId := self validCheckOutOfCartWithId: anotherCartId through: anInterfaceFacade .
 	
 	self deny: transactionId = anotherTransactionId .
@@ -1019,6 +1002,32 @@ test29CantCheckOutWithAnInvalidSession
 	
 	! !
 
+!InterfaceFacadeTest methodsFor: 'session' stamp: 'SC 7/23/2020 11:50:54'!
+test31SessionIsDeletedAfterCheckOut
+
+	| aCartId anInterfaceFacade |
+	
+	anInterfaceFacade := InterfaceFacade debitingWith: positiveMerchantProcessor 
+	                                                             acceptingItemsFrom: aPriceList 
+	                                                             registeringOn: aSalesList 
+	                                                             measuringTimeWith: clock.
+	
+	aCartId := anInterfaceFacade createCartFrom: aValidUser with: aValidPassword .
+	
+	anInterfaceFacade add: 1 of: aBook intoCartWithId: aCartId.
+	
+	self validCheckOutOfCartWithId: aCartId through: anInterfaceFacade .
+
+	self should: [anInterfaceFacade hasValidSessionWithId: aCartId]
+		 raise: Error - MessageNotUnderstood 
+		 withExceptionDo: [ :anError |
+			anError messageText = '' .
+			] .
+
+
+	
+	! !
+
 
 !InterfaceFacadeTest methodsFor: 'listPurchases' stamp: 'SC 7/22/2020 12:49:29'!
 test11CantListPurchasesOfUserWithInvalidName
@@ -1236,6 +1245,17 @@ Object subclass: #AuthenticationSystem
 isValid: aUserName with: aPassword
 
 	self subclassResponsibility ! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'AuthenticationSystem class' category: #TusLibros!
+AuthenticationSystem class
+	instanceVariableNames: ''!
+
+!AuthenticationSystem class methodsFor: 'as yet unclassified' stamp: 'SC 7/23/2020 12:09:16'!
+assertIsValid: aUsername with: aPassword
+
+	^self new isValid: aUsername with: aPassword .! !
 
 
 !classDefinition: #AuthenticationSystemSimulator category: #TusLibros!
@@ -1474,57 +1494,36 @@ number
 	^number .! !
 
 
-!CreditCard methodsFor: 'validation' stamp: 'FE 7/11/2020 16:07:47'!
+!CreditCard methodsFor: 'validation' stamp: 'SC 7/23/2020 12:01:05'!
 assertIsValidExpirationDate: aExpirationDate
 
 	| expirationMonth |
 	
 	(aExpirationDate size = 6 & (aExpirationDate allSatisfy: [:char | (char >= $0) & (char <= $9)]) )
-		ifFalse: [ ^ self error: self invalidExpirationDateError ].
+		ifFalse: [ ^ self error: self class invalidExpirationDateError ].
 	
 	expirationMonth := (aExpirationDate copyFrom: 1 to: 2) asInteger.
 			
 	((expirationMonth >= 1) & (expirationMonth <= 12))
-		ifFalse: [ ^ self error: self invalidExpirationDateError ].! !
+		ifFalse: [ ^ self error: self class invalidExpirationDateError ].! !
 
-!CreditCard methodsFor: 'validation' stamp: 'FE 7/11/2020 20:47:11'!
+!CreditCard methodsFor: 'validation' stamp: 'SC 7/23/2020 12:00:57'!
 assertIsValidName: aName
 	
 	(aName isEmpty)
-		ifTrue: [ ^ self error: self invalidCardNameError ].! !
+		ifTrue: [ ^ self error: self class invalidCardNameError ].! !
 
-!CreditCard methodsFor: 'validation' stamp: 'FE 7/9/2020 20:05:18'!
+!CreditCard methodsFor: 'validation' stamp: 'SC 7/23/2020 12:00:54'!
 assertIsValidNumber: aNumber
 	
 	(aNumber size = 16 & (aNumber allSatisfy: [:char | (char >= $0) & (char <= $9)]) )
-		ifFalse: [ ^ self error: self invalidCardNumberError ].! !
+		ifFalse: [ ^ self error: self class invalidCardNumberError ].! !
 
-!CreditCard methodsFor: 'validation' stamp: 'FE 7/9/2020 20:05:48'!
+!CreditCard methodsFor: 'validation' stamp: 'SC 7/23/2020 12:00:51'!
 assertIsValidSecurityCode: aCode
 	
 	(aCode size = 3 & (aCode allSatisfy: [:char | (char >= $0) & (char <= $9)]) )
-		ifFalse: [ ^ self error: self invalidSecurityCodeError ].! !
-
-
-!CreditCard methodsFor: 'errors' stamp: 'FE 7/9/2020 20:04:44'!
-invalidCardNameError
-
-	^ 'Invalid card name.'! !
-
-!CreditCard methodsFor: 'errors' stamp: 'FE 7/9/2020 20:05:18'!
-invalidCardNumberError
-
-	^ 'Invalid card number.'! !
-
-!CreditCard methodsFor: 'errors' stamp: 'FE 7/9/2020 20:05:36'!
-invalidExpirationDateError
-
-	^ 'Invalid Expiration Date.'! !
-
-!CreditCard methodsFor: 'errors' stamp: 'FE 7/9/2020 20:05:48'!
-invalidSecurityCodeError
-
-	^ 'Invalid Security Code.'! !
+		ifFalse: [ ^ self error: self class invalidSecurityCodeError ].! !
 
 
 !CreditCard methodsFor: 'initialize' stamp: 'FE 7/9/2020 19:40:06'!
@@ -1540,43 +1539,82 @@ initializeWithANumber: aNumber name: aName expiration: aDate andCode: aCode
 	expiration := aDate.
 	code := aCode.! !
 
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'CreditCard class' category: #TusLibros!
+CreditCard class
+	instanceVariableNames: ''!
+
+!CreditCard class methodsFor: 'instance creation' stamp: 'SC 7/23/2020 11:56:17'!
+withNumber: aCCNumber name: aCCOwner expiration: aCCExpiration andCode: aCCCode
+
+	^self new initializeWithANumber: aCCNumber name: aCCOwner expiration: aCCExpiration andCode: aCCCode .! !
+
+
+!CreditCard class methodsFor: 'error' stamp: 'SC 7/23/2020 12:00:38'!
+invalidCardNameError
+
+	^ 'Invalid card name.'! !
+
+!CreditCard class methodsFor: 'error' stamp: 'SC 7/23/2020 12:00:26'!
+invalidCardNumberError
+
+	^ 'Invalid card number.'! !
+
+!CreditCard class methodsFor: 'error' stamp: 'SC 7/23/2020 12:00:13'!
+invalidExpirationDateError
+
+	^ 'Invalid Expiration Date.'! !
+
+!CreditCard class methodsFor: 'error' stamp: 'SC 7/23/2020 12:00:02'!
+invalidSecurityCodeError
+
+	^ 'Invalid Security Code.'! !
+
 
 !classDefinition: #InterfaceFacade category: #TusLibros!
 Object subclass: #InterfaceFacade
-	instanceVariableNames: 'carts salesList merchantProcessor cartSessions clock priceList'
+	instanceVariableNames: 'carts salesList merchantProcessor cartSessions clock priceList lastCartId'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros'!
 
-!InterfaceFacade methodsFor: 'checkOut' stamp: 'SC 7/22/2020 13:00:33'!
+!InterfaceFacade methodsFor: 'checkOut' stamp: 'SC 7/23/2020 12:08:03'!
 checkOutOfCart: aCartId withCard: aCCNumber ExpiredBy: aCCExpiration OwnedBy: aCCOwner withCode: aCCCode
 
 	| aCart aCreditCard aCashier aUsername |
 
-	aCart := carts at: aCartId ifAbsent: [self error: 'Invalid Cart Id'].	
+	aCart := self getCartFromId: aCartId .	
 
 	self validateSessionFrom: aCartId .
 
-	aCreditCard := CreditCard new initializeWithANumber: aCCNumber name: aCCOwner expiration: aCCExpiration andCode: aCCCode.
+	aCreditCard := CreditCard withNumber: aCCNumber name: aCCOwner expiration: aCCExpiration andCode: aCCCode.
 	aCashier := CashierCart with: salesList.
 	aUsername := (cartSessions at: aCartId) username .
 	
 	aCashier checkOutOf: aCart with: aCreditCard  debitingWith: merchantProcessor from: aUsername. 
 	
 	carts removeKey: aCartId .
-	
-	self updateTimeOfSessionFrom: aCartId .
+	cartSessions removeKey: aCartId .
 	
 	^ salesList size.
 ! !
 
 
-!InterfaceFacade methodsFor: 'add' stamp: 'SC 7/22/2020 12:14:36'!
+!InterfaceFacade methodsFor: 'access' stamp: 'SC 7/23/2020 12:07:44'!
+getCartFromId: aCartId 
+	
+	^carts at: aCartId ifAbsent: [ self invalidCartIdError ] .
+	
+	! !
+
+
+!InterfaceFacade methodsFor: 'add' stamp: 'SC 7/23/2020 12:02:54'!
 add: aQuantity of: aBook intoCartWithId: aCartId
 
 	| aCart |
 	
-	aCart := carts at: aCartId ifAbsent: [self error: 'Invalid Cart Id'].
+	aCart := self getCartFromId: aCartId .
 	
 	self validateSessionFrom: aCartId .
 	
@@ -1586,7 +1624,7 @@ add: aQuantity of: aBook intoCartWithId: aCartId
 	! !
 
 
-!InterfaceFacade methodsFor: 'initialization' stamp: 'SC 7/21/2020 21:56:02'!
+!InterfaceFacade methodsFor: 'initialization' stamp: 'SC 7/23/2020 12:15:45'!
 debitingWith: aMerchantProcessor acceptingItemsFrom: aPriceList registeringOn: aSalesList measuringTimeWith: aClock
 	
 	merchantProcessor := aMerchantProcessor .
@@ -1595,6 +1633,7 @@ debitingWith: aMerchantProcessor acceptingItemsFrom: aPriceList registeringOn: a
 	clock := aClock.
 	carts := Dictionary new .
 	cartSessions := Dictionary new .
+	lastCartId := 0.
 	! !
 
 
@@ -1603,19 +1642,14 @@ hasCartSessionWithId: aCartId
 
 	^cartSessions includesKey: aCartId .! !
 
-!InterfaceFacade methodsFor: 'session' stamp: 'SC 7/22/2020 12:37:12'!
+!InterfaceFacade methodsFor: 'session' stamp: 'SC 7/23/2020 11:53:12'!
 hasValidSessionWithId: aCartId
 
 	| aCartSession |
 
-	aCartSession := cartSessions at: aCartId .
+	aCartSession := cartSessions at: aCartId ifAbsent: [self invalidCartIdError ] .
 	
 	^aCartSession isValid. ! !
-
-!InterfaceFacade methodsFor: 'session' stamp: 'SC 7/21/2020 21:28:42'!
-sessionExpiredError
-
-	^'Session expired' .! !
 
 !InterfaceFacade methodsFor: 'session' stamp: 'SC 7/21/2020 21:16:53'!
 updateTimeOfSessionFrom: aCartId 
@@ -1626,46 +1660,47 @@ updateTimeOfSessionFrom: aCartId
 	
 	aCartSession updateTime .! !
 
-!InterfaceFacade methodsFor: 'session' stamp: 'SC 7/21/2020 21:28:28'!
+!InterfaceFacade methodsFor: 'session' stamp: 'SC 7/23/2020 12:06:17'!
 validateSessionFrom:  aCartId
 
 	| aCartSession |
 	
-	aCartSession := cartSessions at: aCartId .
+	aCartSession := cartSessions at: aCartId ifAbsent: [self invalidCartIdError ].
 	
 	(aCartSession isValid)
 		ifFalse: [self error: self sessionExpiredError]! !
 
 
-!InterfaceFacade methodsFor: 'list' stamp: 'SC 7/21/2020 21:35:17'!
+!InterfaceFacade methodsFor: 'list' stamp: 'SC 7/23/2020 12:18:01'!
 itemsFrom: aCartId
 
 	| aCart |
 		
-	aCart := carts at: aCartId ifAbsent: [self error: 'Invalid Cart Id'].
-	
+	aCart := self getCartFromId: aCartId .
+		
 	^ aCart items.
 ! !
 
-!InterfaceFacade methodsFor: 'list' stamp: 'SC 7/21/2020 21:37:33'!
+!InterfaceFacade methodsFor: 'list' stamp: 'SC 7/23/2020 12:18:26'!
 listCart: aCartId
 
 	| aCart |
 	
-	aCart := carts at: aCartId ifAbsent: [self error: 'Invalid Cart Id'].
+	aCart := self getCartFromId: aCartId .
 	
 	self validateSessionFrom: aCartId .
+	
 	self updateTimeOfSessionFrom: aCartId .
 	
 	^ aCart items.
 ! !
 
-!InterfaceFacade methodsFor: 'list' stamp: 'SC 7/21/2020 22:16:37'!
+!InterfaceFacade methodsFor: 'list' stamp: 'SC 7/23/2020 12:18:50'!
 listPurchasesOf: aUsername with: aPassword
 
 	| salesFromUser |
 
-	AuthenticationSystemSimulator new isValid: aUsername with: aPassword .
+	AuthenticationSystemSimulator assertIsValid: aUsername with: aPassword .
 	
 	salesFromUser := salesList select: [ :aSale | aSale owner = aUsername] .
 	
@@ -1677,14 +1712,14 @@ sales
 	^salesList ! !
 
 
-!InterfaceFacade methodsFor: 'create' stamp: 'SC 7/22/2020 12:13:58'!
+!InterfaceFacade methodsFor: 'create' stamp: 'SC 7/23/2020 12:11:43'!
 createCartFrom: aUsername with: aPassword
 
 	| aCart aCartId aCartSession |
 	
-	AuthenticationSystemSimulator new isValid: aUsername with: aPassword . 
+	AuthenticationSystemSimulator assertIsValid: aUsername with: aPassword . 
 	
-	aCart := Cart new initializeAcceptingItemsOf: priceList .
+	aCart := Cart acceptingItemsOf: priceList .
 	aCartId := self generateCartId.
 	
 	aCartSession := CartSession from: aUsername with: clock.
@@ -1710,10 +1745,27 @@ createTicket: aListOfSales
 	
 	! !
 
-!InterfaceFacade methodsFor: 'create' stamp: 'FE 7/16/2020 21:00:28'!
+!InterfaceFacade methodsFor: 'create' stamp: 'SC 7/23/2020 12:15:45'!
 generateCartId
 
-	^ carts size + 1! !
+	lastCartId _ lastCartId + 1.
+	^ lastCartId .! !
+
+
+!InterfaceFacade methodsFor: 'error' stamp: 'SC 7/23/2020 12:11:04'!
+invalidCartIdError
+
+	self error: self invalidCartIdMessage .! !
+
+!InterfaceFacade methodsFor: 'error' stamp: 'SC 7/23/2020 11:54:31'!
+invalidCartIdMessage
+
+	^'Invalid Cart Id' .! !
+
+!InterfaceFacade methodsFor: 'error' stamp: 'SC 7/21/2020 21:28:42'!
+sessionExpiredError
+
+	^'Session expired' .! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -1734,8 +1786,10 @@ Object subclass: #MerchantProcessor
 	poolDictionaries: ''
 	category: 'TusLibros'!
 
-!MerchantProcessor methodsFor: 'debit' stamp: 'SC 7/14/2020 19:23:36'!
-debit: anAmmount from: aCreditCard! !
+!MerchantProcessor methodsFor: 'debit' stamp: 'SC 7/23/2020 12:25:38'!
+debit: anAmmount from: aCreditCard
+
+	self subclassResponsibility .! !
 
 
 !classDefinition: #MerchantProcessorSimmulator category: #TusLibros!
